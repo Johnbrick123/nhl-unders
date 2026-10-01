@@ -1,9 +1,9 @@
 {
  "season": "2026-27",
- "logged": 2,
- "graded": 0,
- "today": "2026-09-30",
- "built": "2026-09-30 20:51",
+ "logged": 18,
+ "graded": 2,
+ "today": "2026-10-01",
+ "built": "2026-10-01 04:49",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -20,18 +20,153 @@
   "base_over": 0.599,
   "base_goals": 3.085
  },
+ "over_rate": 1.0,
+ "avg_goals": 6.0,
+ "avg_proj": 2.9975,
+ "auc": null,
+ "auc_lo": null,
+ "auc_hi": null,
+ "auc_proj": null,
+ "bands": [
+  {
+   "band": "Under 30",
+   "n": 1,
+   "over": 1.0,
+   "goals": 4.0
+  },
+  {
+   "band": "30\u201340",
+   "n": 0,
+   "over": null,
+   "goals": null
+  },
+  {
+   "band": "40\u201350",
+   "n": 0,
+   "over": null,
+   "goals": null
+  },
+  {
+   "band": "50\u201360",
+   "n": 0,
+   "over": null,
+   "goals": null
+  },
+  {
+   "band": "60\u201370",
+   "n": 1,
+   "over": 1.0,
+   "goals": 8.0
+  },
+  {
+   "band": "70+",
+   "n": 0,
+   "over": null,
+   "goals": null
+  }
+ ],
+ "calibration": [
+  {
+   "lo": 0.45,
+   "hi": 0.5,
+   "n": 1,
+   "pred": 0.451,
+   "actual": 1.0
+  },
+  {
+   "lo": 0.65,
+   "hi": 0.7,
+   "n": 1,
+   "pred": 0.682,
+   "actual": 1.0
+  }
+ ],
+ "inputs": [
+  {
+   "key": "off",
+   "label": "Offense",
+   "n": 2,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.1337,
+   "weight": 0.4
+  },
+  {
+   "key": "def",
+   "label": "Opp defense",
+   "n": 2,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.1253,
+   "weight": 0.4
+  },
+  {
+   "key": "goalie",
+   "label": "Opp goalie",
+   "n": 2,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.0667,
+   "weight": 0.2
+  },
+  {
+   "key": "st",
+   "label": "PP vs PK",
+   "n": 2,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.1093,
+   "weight": 0.0
+  },
+  {
+   "key": "l5",
+   "label": "Goals L5",
+   "n": 0,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.0598,
+   "weight": 0.0
+  },
+  {
+   "key": "fin",
+   "label": "Finishing",
+   "n": 2,
+   "rho": null,
+   "ci": null,
+   "backtest": 0.0268,
+   "weight": 0.0
+  }
+ ],
+ "red": {
+  "n": 1,
+  "under": 0.0
+ },
+ "green": {
+  "n": 0,
+  "over": null
+ },
  "days": [
   {
-   "date": "2026-09-30",
-   "rows": 2,
+   "date": "2026-10-01",
+   "rows": 16,
    "graded": 0,
-   "proj": 2.9975,
+   "proj": 3.0001875,
    "goals": null,
    "red_n": 0,
    "red_under": 0,
    "default_goalies": 0
+  },
+  {
+   "date": "2026-09-30",
+   "rows": 2,
+   "graded": 2,
+   "proj": 2.9975,
+   "goals": 6.0,
+   "red_n": 1,
+   "red_under": 0,
+   "default_goalies": 0
   }
  ],
- "games_today": 3,
+ "games_today": 8,
  "alerts": []
 }
