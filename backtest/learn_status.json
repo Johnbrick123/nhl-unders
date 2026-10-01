@@ -1,0 +1,47 @@
+{
+ "date": "2026-09-30",
+ "data_through": "2026-09-29",
+ "current_n": 10,
+ "model_version": 1,
+ "current": {
+  "goalie": 0.2,
+  "def": 0.4,
+  "off": 0.4,
+  "st": 0.0,
+  "l5": 0.0,
+  "fin": 0.0
+ },
+ "target": {
+  "goalie": 0.15,
+  "def": 0.35,
+  "off": 0.4,
+  "st": 0.0,
+  "l5": 0.0,
+  "fin": 0.1
+ },
+ "candidate": {
+  "goalie": 0.15,
+  "def": 0.35,
+  "off": 0.4,
+  "st": 0.0,
+  "l5": 0.0,
+  "fin": 0.1
+ },
+ "metrics": {
+  "val_n": 10,
+  "val_cur": 0.8,
+  "val_new": 0.76,
+  "val_target": 0.76,
+  "prev_cur": 0.5747,
+  "prev_new": 0.5772
+ },
+ "measured": {
+  "home": 1.037,
+  "away": 0.963,
+  "b2b": 0.923,
+  "oppB2b": 1.042
+ },
+ "decision": "waiting",
+ "reason": "Only 10 team-games played this season; changes need 500. The fit is shown for reference.",
+ "alerts": []
+}

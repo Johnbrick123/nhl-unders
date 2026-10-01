@@ -1,0 +1,194 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>NHL Scoring Backtest</title>
+<style>
+/* Layout: same dark board look as the NHL Unders / MLB Matchup pages; a single reading column of findings, each with one chart or table. */
+:root{
+  --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+  --txt:#e6edf3; --muted:#8b98a5; --accent:#4a9eff; --chip:#222c38;
+  --good:#7ee0a2; --warn:#f0c674; --bad:#f08a84; --ink:#06121f;
+  --team:#4a9eff; --opp:#c792ea; --spot:#f0c674; --matchup:#7fd1c7;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:650}
+.date{color:var(--muted);font-size:13px}
+main{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:18px 60px;display:grid;gap:28px}
+h2{font-size:15px;margin:0 0 4px;font-weight:650}
+.lede{color:#c9d4de;margin:0 0 12px;max-width:75ch}
+.sub{color:var(--muted);font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.card .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.card .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.card .d{font-size:12.5px;color:#c9d4de}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:7px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td.l,th.l{text-align:left}
+.groupsep{border-left:2px solid var(--line)}
+.mini{display:inline-block;min-width:44px;padding:3px 7px;border-radius:5px;font-weight:700;color:var(--ink);text-align:center}
+/* band chart */
+.bands{display:grid;gap:8px}
+.brow{display:grid;grid-template-columns:78px minmax(0,1fr) 150px;gap:10px;align-items:center}
+.brow .lab{font-weight:650;font-variant-numeric:tabular-nums}
+.btrack{position:relative;height:22px;background:var(--panel2);border-radius:4px}
+.bfill{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.bline{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--txt);opacity:.55}
+.btxt{position:absolute;left:8px;top:2px;font-weight:700;color:var(--ink);font-size:12.5px}
+.brow .meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* inputs chart */
+.irow{display:grid;grid-template-columns:200px minmax(0,1fr) 92px 150px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.irow:last-child{border-bottom:0}
+.irow .name{font-size:13px}
+.irow .grp{font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-left:6px}
+.itrack{height:12px;background:var(--panel2);border-radius:3px;position:relative}
+.ifill{height:100%;border-radius:3px}
+.irow .num{font-variant-numeric:tabular-nums;font-size:12.5px;text-align:right}
+.chip{font-size:11px;font-weight:650;padding:2px 8px;border-radius:5px;justify-self:start}
+.chip.keep{background:rgba(126,224,162,.16);color:var(--good)}
+.chip.ok{background:rgba(240,198,116,.14);color:var(--warn)}
+.chip.drop{background:rgba(240,138,132,.14);color:var(--bad)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.wbar{display:flex;height:26px;border-radius:5px;overflow:hidden;font-size:11.5px;font-weight:650;color:var(--ink)}
+.wbar span{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:5px;color:#c9d4de;max-width:78ch}
+@media (max-width:640px){.irow{grid-template-columns:1fr 80px;}.irow .itrack{grid-column:1/-1;order:3}.irow .chip{order:4}.brow{grid-template-columns:64px minmax(0,1fr)}.brow .meta{grid-column:2}}
+</style>
+
+<header><h1>🏒 NHL Scoring Backtest</h1><span class="date" id="hdr"></span><span style="flex:1"></span><nav style="display:flex;gap:12px;font-size:12.5px"><a href="index.html" style="color:var(--accent);text-decoration:none">Board</a><a href="monitor.html" style="color:var(--accent);text-decoration:none">Accuracy monitor</a></nav></header>
+<main>
+  <section>
+    <p class="lede" id="intro"></p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section>
+    <h2>Does the score work?</h2>
+    <p class="lede">Every team-game sorted by its board score before puck drop. The bar shows how often the team scored 3 or more goals. The white line is the league average. Red rows are your under spots.</p>
+    <div class="panel"><div class="bands" id="bands"></div></div>
+  </section>
+
+  <section>
+    <h2>Which inputs predict goals</h2>
+    <p class="lede">Each input tested on its own against goals scored. The bar is the correlation: 0 means no link. Hockey is random game to game, so 0.10–0.14 is about as strong as single inputs get. The right column compares the 20% of games where the input most favored scoring with the 20% where it least favored scoring.</p>
+    <div class="legend"><span><i style="background:var(--team)"></i>Team's own offense</span><span><i style="background:var(--opp)"></i>Opponent</span><span><i style="background:var(--matchup)"></i>Matchup</span><span><i style="background:var(--spot)"></i>Situation</span></div>
+    <div class="panel" id="inputs"></div>
+  </section>
+
+  <section>
+    <h2>Weights: current vs suggested</h2>
+    <p class="lede" id="wlede"></p>
+    <div class="wgrid" id="wbars"></div>
+    <div class="panel scroll" style="margin-top:12px"><table id="wseason"></table></div>
+  </section>
+
+  <section>
+    <h2>Board vs your original sheet, season by season</h2>
+    <p class="lede">Ranking accuracy: take one game where a team scored 3+ and one where it scored 2 or fewer. This is how often the method ranks the 3+ game higher before puck drop. 50% is a coin flip.</p>
+    <div class="panel scroll"><table id="seasons"></table></div>
+  </section>
+
+  <section>
+    <h2>Home ice and rest</h2>
+    <p class="lede">These move goals more than the board assumed, so the projection now uses the measured sizes.</p>
+    <div class="panel scroll"><table id="sit"></table></div>
+  </section>
+
+  <section>
+    <h2>Are the projected chances accurate?</h2>
+    <p class="lede">After the update, the projection's chance of a team scoring 3+ compared with how often it happened. Close numbers mean the U2.5 percentage on the board can be trusted.</p>
+    <div class="panel scroll"><table id="calib"></table></div>
+  </section>
+
+  <section>
+    <h2>How the test was run</h2>
+    <ul class="plain" id="method"></ul>
+  </section>
+</main>
+
+<script>
+const R={"n": 13130, "seasons": ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27 (to date)"], "current": "2026-27 (to date)", "current_n": 10, "data_through": "2026-09-29", "base_over": 0.5988, "base_goals": 3.084, "inputs": [{"label": "Team GF/G", "group": "team", "rho": 0.1301, "auc": 0.568, "binary": false, "low_over": 0.5209, "high_over": 0.6679, "low_goals": 2.774, "high_goals": 3.356}, {"label": "Team xGF/G", "group": "team", "rho": 0.1219, "auc": 0.5624, "binary": false, "low_over": 0.5141, "high_over": 0.6717, "low_goals": 2.745, "high_goals": 3.368}, {"label": "Team shots/G", "group": "team", "rho": 0.1024, "auc": 0.553, "binary": false, "low_over": 0.5446, "high_over": 0.6759, "low_goals": 2.878, "high_goals": 3.374}, {"label": "Team Sh%", "group": "team", "rho": 0.0671, "auc": 0.5357, "binary": false, "low_over": 0.5533, "high_over": 0.6283, "low_goals": 2.876, "high_goals": 3.188}, {"label": "Team PP goals/G", "group": "team", "rho": 0.0988, "auc": 0.5508, "binary": false, "low_over": 0.5385, "high_over": 0.6668, "low_goals": 2.864, "high_goals": 3.37}, {"label": "Goals L5", "group": "team", "rho": 0.0598, "auc": 0.5282, "binary": false, "low_over": 0.5684, "high_over": 0.6294, "low_goals": 2.945, "high_goals": 3.231}, {"label": "Goals L10", "group": "team", "rho": 0.079, "auc": 0.5416, "binary": false, "low_over": 0.5463, "high_over": 0.642, "low_goals": 2.872, "high_goals": 3.278}, {"label": "Luck (GF \u00f7 xGF)", "group": "team", "rho": 0.0268, "auc": 0.5165, "binary": false, "low_over": 0.5674, "high_over": 0.615, "low_goals": 2.954, "high_goals": 3.139}, {"label": "Offense rating", "group": "team", "rho": 0.1337, "auc": 0.569, "binary": false, "low_over": 0.5221, "high_over": 0.6813, "low_goals": 2.769, "high_goals": 3.404}, {"label": "Opp xGA/G", "group": "opp", "rho": 0.1253, "auc": 0.5609, "binary": false, "low_over": 0.5385, "high_over": 0.6725, "low_goals": 2.815, "high_goals": 3.403}, {"label": "Opp GA/G", "group": "opp", "rho": 0.1362, "auc": 0.5642, "binary": false, "low_over": 0.5308, "high_over": 0.6881, "low_goals": 2.777, "high_goals": 3.481}, {"label": "Opp shots against/G", "group": "opp", "rho": 0.1185, "auc": 0.5549, "binary": false, "low_over": 0.5598, "high_over": 0.687, "low_goals": 2.9, "high_goals": 3.476}, {"label": "Opp PK goals allowed/G", "group": "opp", "rho": 0.0535, "auc": 0.5197, "binary": false, "low_over": 0.5834, "high_over": 0.6299, "low_goals": 3.013, "high_goals": 3.264}, {"label": "Opp goalie GSAx", "group": "opp", "rho": 0.0713, "auc": 0.5353, "binary": false, "low_over": 0.5651, "high_over": 0.6478, "low_goals": 2.916, "high_goals": 3.279}, {"label": "Opp goalie factor (shrunk)", "group": "opp", "rho": 0.0667, "auc": 0.5327, "binary": false, "low_over": 0.5678, "high_over": 0.6516, "low_goals": 2.93, "high_goals": 3.291}, {"label": "PP vs PK matchup", "group": "matchup", "rho": 0.1093, "auc": 0.5513, "binary": false, "low_over": 0.5423, "high_over": 0.6603, "low_goals": 2.846, "high_goals": 3.396}, {"label": "Home ice", "group": "spot", "rho": 0.0603, "auc": 0.5225, "binary": true, "yes_goals": 3.195, "no_goals": 2.973, "yes_over": 0.6204, "no_over": 0.5772, "yes_n": 6565}, {"label": "Team on back-to-back", "group": "spot", "rho": 0.0472, "auc": 0.5154, "binary": true, "yes_goals": 3.118, "no_goals": 2.9, "yes_over": 0.6075, "no_over": 0.551, "yes_n": 11099}, {"label": "Opp on back-to-back", "group": "spot", "rho": 0.039, "auc": 0.5104, "binary": true, "yes_goals": 3.25, "no_goals": 3.054, "yes_over": 0.6312, "no_over": 0.5928, "yes_n": 2031}], "composites": [{"label": "Board score (current weights)", "auc": 0.5993, "rho": 0.195, "quintiles": [{"q": 1, "goals": 2.633, "over": 0.4855, "n": 2626}, {"q": 2, "goals": 2.849, "over": 0.5442, "n": 2626}, {"q": 3, "goals": 3.072, "over": 0.5982, "n": 2626}, {"q": 4, "goals": 3.276, "over": 0.6535, "n": 2626}, {"q": 5, "goals": 3.593, "over": 0.7125, "n": 2626}]}, {"label": "Projected goals", "auc": 0.6, "rho": 0.2015, "quintiles": [{"q": 1, "goals": 2.625, "over": 0.4859, "n": 2626}, {"q": 2, "goals": 2.874, "over": 0.5506, "n": 2626}, {"q": 3, "goals": 2.979, "over": 0.5849, "n": 2626}, {"q": 4, "goals": 3.318, "over": 0.6531, "n": 2626}, {"q": 5, "goals": 3.626, "over": 0.7193, "n": 2626}]}, {"label": "Your original sheet", "auc": 0.5677, "rho": 0.1288, "quintiles": [{"q": 1, "goals": 2.787, "over": 0.5225, "n": 2626}, {"q": 2, "goals": 2.923, "over": 0.5552, "n": 2626}, {"q": 3, "goals": 3.091, "over": 0.604, "n": 2626}, {"q": 4, "goals": 3.192, "over": 0.6333, "n": 2626}, {"q": 5, "goals": 3.429, "over": 0.679, "n": 2626}]}], "deciles": [{"d": 1, "goals": 2.506, "over": 0.4539, "lo": 0.5, "hi": 26.0}, {"d": 2, "goals": 2.759, "over": 0.5171, "lo": 26.0, "hi": 33.3}, {"d": 3, "goals": 2.776, "over": 0.5225, "lo": 33.3, "hi": 38.5}, {"d": 4, "goals": 2.922, "over": 0.5659, "lo": 38.5, "hi": 43.4}, {"d": 5, "goals": 2.989, "over": 0.5826, "lo": 43.4, "hi": 48.2}, {"d": 6, "goals": 3.154, "over": 0.6139, "lo": 48.2, "hi": 52.8}, {"d": 7, "goals": 3.224, "over": 0.6337, "lo": 52.8, "hi": 58.0}, {"d": 8, "goals": 3.327, "over": 0.6733, "lo": 58.0, "hi": 63.9}, {"d": 9, "goals": 3.495, "over": 0.6893, "lo": 63.9, "hi": 72.4}, {"d": 10, "goals": 3.691, "over": 0.7357, "lo": 72.4, "hi": 100.0}], "bands": [{"band": "<30", "goals": 2.601, "over": 0.4764, "n": 1946}, {"band": "30-40", "goals": 2.787, "over": 0.5277, "n": 2380}, {"band": "40-50", "goals": 2.985, "over": 0.5811, "n": 2757}, {"band": "50-60", "goals": 3.228, "over": 0.6332, "n": 2593}, {"band": "60-70", "goals": 3.414, "over": 0.6854, "n": 1837}, {"band": "70+", "goals": 3.668, "over": 0.7273, "n": 1617}], "calibration": [{"pred": 0.4111, "actual": 0.4435, "n": 1141, "proj": 2.328, "goals": 2.5}, {"pred": 0.4772, "actual": 0.5198, "n": 1568, "proj": 2.583, "goals": 2.726}, {"pred": 0.5263, "actual": 0.5474, "n": 2225, "proj": 2.783, "goals": 2.873}, {"pred": 0.5754, "actual": 0.5834, "n": 2523, "proj": 2.994, "goals": 2.971}, {"pred": 0.6239, "actual": 0.6395, "n": 2247, "proj": 3.219, "goals": 3.248}, {"pred": 0.6732, "actual": 0.674, "n": 1672, "proj": 3.469, "goals": 3.414}, {"pred": 0.7486, "actual": 0.7338, "n": 1754, "proj": 3.93, "goals": 3.691}], "proj_mean": 3.075, "coef": {"goalie": 0.422, "defense": 0.927, "offense": 0.967, "pp_pk": -0.197, "l5": -0.041, "luck": 0.19}, "fitted_w": {"goalie": 0.168, "defense": 0.37, "offense": 0.386, "pp_pk": 0.0, "l5": 0.0, "luck": 0.076}, "per_season_w": {"2021-22": {"goalie": 0.268, "defense": 0.29, "offense": 0.367, "pp_pk": 0.0, "l5": 0.027, "luck": 0.048}, "2022-23": {"goalie": 0.123, "defense": 0.441, "offense": 0.376, "pp_pk": 0.0, "l5": 0.041, "luck": 0.019}, "2023-24": {"goalie": 0.031, "defense": 0.404, "offense": 0.486, "pp_pk": 0.0, "l5": 0.0, "luck": 0.079}, "2024-25": {"goalie": 0.169, "defense": 0.339, "offense": 0.321, "pp_pk": 0.0, "l5": 0.0, "luck": 0.17}, "2025-26": {"goalie": 0.179, "defense": 0.276, "offense": 0.44, "pp_pk": 0.0, "l5": 0.0, "luck": 0.104}}, "suggested_w": {"goalie": 0.15, "defense": 0.35, "offense": 0.4, "pp_pk": 0.0, "l5": 0.0, "luck": 0.1}, "test": {"season": "2025-26", "n": 2624, "default_auc": 0.5747, "fitted_auc": 0.5772, "sheet_auc": 0.5535, "proj_auc": 0.5713, "default_q": [{"q": 1, "goals": 2.733, "over": 0.5029, "n": 525}, {"q": 2, "goals": 2.96, "over": 0.5733, "n": 525}, {"q": 3, "goals": 3.015, "over": 0.6107, "n": 524}, {"q": 4, "goals": 3.284, "over": 0.6686, "n": 525}, {"q": 5, "goals": 3.415, "over": 0.6629, "n": 525}], "fitted_q": [{"q": 1, "goals": 2.735, "over": 0.499, "n": 525}, {"q": 2, "goals": 2.941, "over": 0.5695, "n": 525}, {"q": 3, "goals": 3.057, "over": 0.6164, "n": 524}, {"q": 4, "goals": 3.23, "over": 0.6629, "n": 525}, {"q": 5, "goals": 3.444, "over": 0.6705, "n": 525}], "sheet_q": [{"q": 1, "goals": 2.848, "over": 0.5371, "n": 525}, {"q": 2, "goals": 2.935, "over": 0.5752, "n": 525}, {"q": 3, "goals": 3.061, "over": 0.5973, "n": 524}, {"q": 4, "goals": 3.221, "over": 0.6457, "n": 525}, {"q": 5, "goals": 3.343, "over": 0.6629, "n": 525}]}, "by_season": [{"season": "2021-22", "n": 2624, "board": 0.6173, "sheet": 0.5775, "proj": 0.6255, "over": 0.6021, "new": 0.6173}, {"season": "2022-23", "n": 2624, "board": 0.6148, "sheet": 0.5673, "proj": 0.615, "over": 0.6063, "new": 0.6148}, {"season": "2023-24", "n": 2624, "board": 0.6072, "sheet": 0.5801, "proj": 0.6117, "over": 0.5972, "new": 0.6072}, {"season": "2024-25", "n": 2624, "board": 0.581, "sheet": 0.5502, "proj": 0.5888, "over": 0.585, "new": 0.581}, {"season": "2025-26", "n": 2624, "board": 0.5747, "sheet": 0.5535, "proj": 0.5713, "over": 0.6037, "new": 0.5747}], "model": {"version": 1, "updated": "2026-09-30", "note": "Set from the 2021-22 to 2025-26 backtest. learn.py updates this file weekly when the guardrails in README pass.", "weights": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "projection": {"home": 1.035, "away": 0.965, "b2b": 0.93, "oppB2b": 1.06, "shrink": 0.85}, "priorGames": 20, "expect": {"auc_low": 0.575, "auc_high": 0.617, "auc_all": 0.599, "base_over": 0.599, "base_goals": 3.085}, "history": [{"version": 1, "date": "2026-09-30", "weights": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "why": "Initial backtest: offense and opponent defense carry most of the signal; PP/PK, last-5 and luck added nothing once those were in."}]}, "prev_weights": {"goalie": 0.3, "def": 0.2, "off": 0.3, "st": 0.1, "l5": 0.1, "fin": 0}, "learn": {"date": "2026-09-30", "data_through": "2026-09-29", "current_n": 10, "model_version": 1, "current": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "target": {"goalie": 0.15, "def": 0.35, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.1}, "candidate": {"goalie": 0.15, "def": 0.35, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.1}, "metrics": {"val_n": 10, "val_cur": 0.8, "val_new": 0.76, "val_target": 0.76, "prev_cur": 0.5747, "prev_new": 0.5772}, "measured": {"home": 1.037, "away": 0.963, "b2b": 0.923, "oppB2b": 1.042}, "decision": "waiting", "reason": "Only 10 team-games played this season; changes need 500. The fit is shown for reference.", "alerts": []}, "calibration_new": [{"pred": 0.419, "actual": 0.428, "n": 711}, {"pred": 0.477, "actual": 0.489, "n": 1506}, {"pred": 0.527, "actual": 0.552, "n": 2468}, {"pred": 0.575, "actual": 0.579, "n": 2870}, {"pred": 0.624, "actual": 0.647, "n": 2487}, {"pred": 0.673, "actual": 0.666, "n": 1711}, {"pred": 0.742, "actual": 0.76, "n": 1377}], "proj_new_auc": 0.6008, "situational": [{"label": "Home", "yes": 3.2, "no": 2.97, "yes_over": 0.62, "no_over": 0.577, "n": 6565}, {"label": "Team on back-to-back", "yes": 2.9, "no": 3.12, "yes_over": 0.551, "no_over": 0.608, "n": 2031}, {"label": "Opponent on back-to-back", "yes": 3.25, "no": 3.05, "yes_over": 0.631, "no_over": 0.593, "n": 2031}], "new_quintiles": [{"q": 1, "goals": 2.633, "over": 0.4855}, {"q": 2, "goals": 2.849, "over": 0.5442}, {"q": 3, "goals": 3.072, "over": 0.5982}, {"q": 4, "goals": 3.276, "over": 0.6535}, {"q": 5, "goals": 3.593, "over": 0.7125}], "bands_new": [{"band": "Under 30", "goals": 2.6, "over": 0.476, "n": 1946}, {"band": "30\u201340", "goals": 2.79, "over": 0.528, "n": 2380}, {"band": "40\u201350", "goals": 2.99, "over": 0.581, "n": 2757}, {"band": "50\u201360", "goals": 3.23, "over": 0.633, "n": 2593}, {"band": "60\u201370", "goals": 3.41, "over": 0.685, "n": 1837}, {"band": "70+", "goals": 3.67, "over": 0.727, "n": 1617}], "auc_new_all": 0.5993, "auc_prev_all": 0.5915};
+const $=s=>document.querySelector(s);
+const pct=(v,d=0)=>(v*100).toFixed(d)+'%';
+const heat=v=>`hsl(${Math.max(0,Math.min(100,v))*1.2} 62% 46%)`;
+const GRP={team:'var(--team)',opp:'var(--opp)',matchup:'var(--matchup)',spot:'var(--spot)'};
+const base=R.base_over;
+
+$('#hdr').textContent=`${R.n.toLocaleString()} team-games · ${R.seasons[0]} to ${R.seasons[R.seasons.length-1]}`;
+$('#intro').textContent=`Every regular-season game from ${R.seasons[0]} through ${R.seasons[R.seasons.length-1]} was replayed day by day. Each team's inputs were rebuilt using only games played before that date, plus last season counted as 20 games, the same way the live board does it. The question was simple: does a higher score mean more goals?`;
+
+const bn=R.bands_new, lo=bn[0], hi=bn[bn.length-1], t=R.test, bs=R.by_season;
+const sheetWins=bs.filter(s=>s.new>s.sheet).length;
+$('#cards').innerHTML=[
+ ['The score works',`${pct(lo.over)} → ${pct(hi.over)}`,`With a board score under 30, teams scored 3+ in ${pct(lo.over)} of games. At 70+ it was ${pct(hi.over)}. Under 2.5 hit ${pct(1-lo.over)} of the time at the low end.`],
+ ['Beats your original sheet',`${sheetWins} of ${bs.length} seasons`,`Adding the opponent's defense and goalie ranked games better than offense-only stats in every season tested.`],
+ ['Board weights now',`v${R.model.version}`,`${Object.entries({off:'Offense',def:'Opp defense',goalie:'Opp goalie',st:'PP vs PK',l5:'Goals L5',fin:'Finishing'}).filter(([k])=>R.model.weights[k]>0).map(([k,l])=>`${l} ${Math.round(R.model.weights[k]*100)}%`).join(', ')}. Updated ${R.model.updated}.`],
+ ['Rest and home ice',`±0.2 goals`,`Home teams, rested teams and teams facing a tired opponent each score about 0.2 more goals per game.`],
+].map(([k,v,d])=>`<div class="card"><span class="k">${k}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join('');
+
+/* bands */
+const mid=b=>({'Under 30':15,'30–40':35,'40–50':45,'50–60':55,'60–70':65,'70+':85})[b];
+$('#bands').innerHTML=bn.map(b=>`<div class="brow"><span class="lab">${b.band}</span>
+  <div class="btrack"><div class="bfill" style="width:${b.over*100}%;background:${heat(mid(b.band))}"></div><div class="btxt">${pct(b.over)} scored 3+</div><div class="bline" style="left:${base*100}%" title="League average ${pct(base)}"></div></div>
+  <span class="meta">${b.goals.toFixed(2)} goals/gm · ${b.n.toLocaleString()} games</span></div>`).join('')+
+  `<div class="sub" style="margin-top:6px">League average: ${pct(base)} of team-games had 3+ goals (${R.base_goals.toFixed(2)} goals per game). Score bands use the board's current weights.</div>`;
+
+/* inputs */
+const verdict={"Offense rating":"keep","Opp xGA/G":"keep","Opp goalie factor (shrunk)":"keep","Opp goalie GSAx":"keep","Home ice":"keep","Team on back-to-back":"keep","Opp on back-to-back":"keep",
+  "Team GF/G":"in","Team xGF/G":"in","Team shots/G":"in","Team PP goals/G":"in","Opp GA/G":"in","Opp shots against/G":"in","Team Sh%":"in",
+  "PP vs PK matchup":"drop","Goals L5":"drop","Goals L10":"drop","Luck (GF ÷ xGF)":"drop","Opp PK goals allowed/G":"drop"};
+const vtxt={keep:['keep','In the score'],in:['ok','Already inside Offense / Opp D'],drop:['drop','Adds nothing']};
+const spotNote={"Home ice":"Projection","Team on back-to-back":"Projection","Opp on back-to-back":"Projection"};
+const maxr=Math.max(...R.inputs.map(i=>i.rho));
+$('#inputs').innerHTML=[...R.inputs].sort((a,b)=>b.rho-a.rho).map(i=>{
+  const [c,txt]=vtxt[verdict[i.label]||'in'];
+  const right=i.binary?`${i.yes_goals.toFixed(2)} vs ${i.no_goals.toFixed(2)} goals`:`${pct(i.low_over)} → ${pct(i.high_over)}`;
+  return `<div class="irow"><span class="name">${i.label}</span>
+   <div class="itrack"><div class="ifill" style="width:${i.rho/maxr*100}%;background:${GRP[i.group]}"></div></div>
+   <span class="num">${i.rho.toFixed(3)}<br><span class="sub">${right}</span></span>
+   <span class="chip ${c}">${spotNote[i.label]?'In the projection':txt}</span></div>`}).join('')+
+  `<div class="sub" style="margin-top:8px">Right column: share of games with 3+ goals in the bottom vs top 20% for that input. For yes/no situations it's goals per game with vs without.</div>`;
+
+/* weights */
+const B2T={goalie:'goalie',def:'defense',off:'offense',st:'pp_pk',l5:'l5',fin:'luck'};
+const toBt=w=>Object.fromEntries(Object.entries(w).map(([k,v])=>[B2T[k],v]));
+const cur=toBt(R.prev_weights), sug=toBt(R.model.weights);
+const WL={offense:'Offense',defense:'Opp D',goalie:'Opp G',pp_pk:'PP/PK',l5:'L5',luck:'Luck'};
+const WC={offense:'var(--team)',defense:'var(--opp)',goalie:'#a98be0',pp_pk:'var(--matchup)',l5:'#6c8db8',luck:'var(--spot)'};
+const wbar=(w,title,sub)=>`<div class="panel"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>${title}</b><span class="sub">${sub}</span></div><div class="wbar">${
+  Object.keys(WL).filter(k=>w[k]>0).map(k=>`<span style="width:${w[k]*100}%;background:${WC[k]}">${WL[k]} ${Math.round(w[k]*100)}</span>`).join('')}</div></div>`;
+$('#wbars').innerHTML=wbar(cur,'Previous','ranking accuracy '+pct(R.auc_prev_all,1))+wbar(sug,`Now on the board (v${R.model.version})`,'ranking accuracy '+pct(R.auc_new_all,1));
+$('#wlede').textContent=`Fitted on the seasons before ${t.season}, then checked on ${t.season}, a season the fit never saw: fitted weights ranked games at ${pct(t.fitted_auc,1)} vs ${pct(t.default_auc,1)} for the board's current weights. Fitting each season on its own (table below) shows how stable each input's share is.`+(R.learn?` Weekly learner, ${R.learn.date}: ${R.learn.decision}. ${R.learn.reason}`:'');
+const ks=['offense','defense','goalie','pp_pk','l5','luck'];
+$('#wseason').innerHTML=`<thead><tr><th class="l">Fitted on</th>${ks.map(k=>`<th>${WL[k]}</th>`).join('')}</tr></thead><tbody>${
+  Object.entries(R.per_season_w).map(([s,w])=>`<tr><td class="l">${s} only</td>${ks.map(k=>`<td>${w[k]>0?Math.round(w[k]*100)+'%':'<span class="sub">0</span>'}</td>`).join('')}</tr>`).join('')}
+  <tr><td class="l"><b>All training seasons</b></td>${ks.map(k=>`<td><b>${R.fitted_w[k]>0?Math.round(R.fitted_w[k]*100)+'%':'0'}</b></td>`).join('')}</tr></tbody>`;
+
+/* seasons */
+const c=v=>`<span class="mini" style="background:${heat((v-.5)/.13*100)}">${pct(v,1)}</span>`;
+$('#seasons').innerHTML=`<thead><tr><th class="l">Season</th><th>New board score</th><th>Old board score</th><th>Projected goals</th><th class="groupsep">Your sheet</th><th>Teams scoring 3+</th></tr></thead><tbody>${
+  bs.map(s=>`<tr><td class="l">${s.season}</td><td>${c(s.new)}</td><td>${c(s.board)}</td><td>${c(s.proj)}</td><td class="groupsep">${c(s.sheet)}</td><td>${pct(s.over)}</td></tr>`).join('')}</tbody>`;
+
+/* situational */
+$('#sit').innerHTML=`<thead><tr><th class="l">Situation</th><th>Goals/gm if yes</th><th>If no</th><th>Difference</th><th>3+ goals if yes</th><th>If no</th><th>Games</th></tr></thead><tbody>${
+  R.situational.map(s=>`<tr><td class="l">${s.label}</td><td>${s.yes.toFixed(2)}</td><td>${s.no.toFixed(2)}</td><td><b style="color:${s.yes>s.no?'var(--good)':'var(--bad)'}">${s.yes>s.no?'+':''}${(s.yes-s.no).toFixed(2)}</b></td><td>${pct(s.yes_over)}</td><td>${pct(s.no_over)}</td><td>${s.n.toLocaleString()}</td></tr>`).join('')}</tbody>`;
+
+/* calibration */
+$('#calib').innerHTML=`<thead><tr><th class="l">Projected chance of 3+</th><th>Actual</th><th>Off by</th><th>Games</th></tr></thead><tbody>${
+  R.calibration_new.map(x=>`<tr><td class="l">${pct(x.pred)}</td><td>${pct(x.actual)}</td><td>${((x.actual-x.pred)*100>=0?'+':'')}${((x.actual-x.pred)*100).toFixed(1)} pts</td><td>${x.n.toLocaleString()}</td></tr>`).join('')}</tbody>`;
+
+$('#method').innerHTML=[
+ `Data: MoneyPuck game-by-game team stats and every shot (expected goals, goalie faced), ${R.seasons[0]} to ${R.seasons[R.seasons.length-1]}, plus ${R.seasons[0].slice(0,4)-1} for the first season's starting point.`,
+ `No peeking: each game only uses stats from before that date. Last season counts as 20 games and fades as the current season builds, like the live board.`,
+ `The opposing goalie is whoever actually started, which is what Daily Faceoff confirms before puck drop. His goals saved above expected (GSAx) covers the previous season plus the current season to date.`,
+ `Goals count overtime and empty-net goals. Shootout goals aren't included.`,
+ `"Your sheet" is GF/G, shots/G, shooting % and power play averaged together, using the team's own stats only, like your original spreadsheet.`,
+ `What this can't tell you: whether you beat the book's prices. It only shows that the score points the right way. Injuries and lineup news aren't in the data.`,
+].map(x=>`<li>${x}</li>`).join('');
+</script>
+</body></html>

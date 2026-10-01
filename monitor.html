@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NHL Accuracy Monitor</title>
+<style>
+/* Layout: same dark board look; status first (alerts + cards), then season tables, then the model and its change history. */
+:root{
+  --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+  --txt:#e6edf3; --muted:#8b98a5; --accent:#4a9eff; --good:#7ee0a2; --warn:#f0c674; --bad:#f08a84; --ink:#06121f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:650}
+.date{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.links{display:flex;gap:12px;font-size:12.5px}.links a{color:var(--accent);text-decoration:none}
+main{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:18px 60px;display:grid;gap:24px}
+h2{font-size:15px;margin:0 0 4px;font-weight:650}
+.lede{color:#c9d4de;margin:0 0 10px;max-width:78ch;font-size:13.5px}
+.sub{color:var(--muted);font-size:12px}
+.alert{border:1px solid var(--line);border-left:4px solid var(--bad);background:var(--panel);border-radius:8px;padding:10px 14px;display:grid;gap:3px}
+.alert.watch{border-left-color:var(--warn)} .alert.info{border-left-color:var(--accent)}
+.alert b{font-size:14px}
+.ok{border-left-color:var(--good)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:3px;align-content:start}
+.card .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.card .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.card .d{font-size:12px;color:#c9d4de}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 8px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:7px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td.l,th.l{text-align:left}
+td.wrap{white-space:normal;text-align:left;min-width:260px;color:#c9d4de;font-size:12.5px}
+.pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:650}
+.p-good{background:rgba(126,224,162,.16);color:var(--good)} .p-warn{background:rgba(240,198,116,.14);color:var(--warn)} .p-bad{background:rgba(240,138,132,.14);color:var(--bad)} .p-mute{background:var(--panel2);color:var(--muted)}
+.empty{color:var(--muted);padding:14px;text-align:center}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:5px;color:#c9d4de;max-width:80ch;font-size:13.5px}
+</style></head><body>
+<header><h1>🏒 NHL Accuracy Monitor</h1><span class="date" id="hdr"></span><span class="spacer"></span>
+<nav class="links"><a href="index.html">Board</a><a href="backtest.html">Backtest</a></nav></header>
+<main>
+  <section id="alerts"></section>
+  <section><div class="cards" id="cards"></div></section>
+  <section><h2>Score bands this season</h2><p class="lede">Pregame score vs what happened. Green bands should score 3+ more often than red ones.</p><div class="panel"><table id="bands"></table></div></section>
+  <section><h2>Is each input still working?</h2><p class="lede">Correlation between each sub-score and goals this season, next to the backtest. Hockey is noisy: with a few hundred games, ±0.08 is normal wobble. The ± column shows that range.</p><div class="panel"><table id="inputs"></table></div></section>
+  <section><h2>Projected chance of 3+ vs actual</h2><div class="panel"><table id="calib"></table></div></section>
+  <section><h2>Last 14 days</h2><p class="lede">Red spots are team totals scored under 35 (the board's under plays).</p><div class="panel"><table id="days"></table></div></section>
+  <section><h2>Model and learning</h2><p class="lede" id="learnlede"></p><div class="panel"><table id="hist"></table></div></section>
+  <section><h2>How alerts reach you</h2><ul class="plain">
+    <li>Every run checks the data (board refreshed, games logged and graded, starting goalies coming through). Problems open a GitHub issue on the repo, which emails you.</li>
+    <li>Accuracy alerts wait for 500 graded team-games (about mid-November) so a bad week can't trigger one.</li>
+    <li>The weekly learner refits the weights every Monday. It changes the board only when new weights beat the current ones on games they weren't fit on, at most once every 4 weeks and by at most 10 points per input. Every change opens an issue saying what changed and why.</li>
+    <li>Issues close themselves when the problem clears. Model-change issues stay open until you close them.</li></ul></section>
+</main>
+<script>
+const S={"season": "2026-27", "logged": 2, "graded": 0, "today": "2026-09-30", "built": "2026-09-30 20:51", "model_version": 1, "weights": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "expect": {"auc_low": 0.575, "auc_high": 0.617, "auc_all": 0.599, "base_over": 0.599, "base_goals": 3.085}, "days": [{"date": "2026-09-30", "rows": 2, "graded": 0, "proj": 2.9975, "goals": null, "red_n": 0, "red_under": 0, "default_goalies": 0}], "games_today": 3, "alerts": [], "learn": {"date": "2026-09-30", "data_through": "2026-09-29", "current_n": 10, "model_version": 1, "current": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "target": {"goalie": 0.15, "def": 0.35, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.1}, "candidate": {"goalie": 0.15, "def": 0.35, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.1}, "metrics": {"val_n": 10, "val_cur": 0.8, "val_new": 0.76, "val_target": 0.76, "prev_cur": 0.5747, "prev_new": 0.5772}, "measured": {"home": 1.037, "away": 0.963, "b2b": 0.923, "oppB2b": 1.042}, "decision": "waiting", "reason": "Only 10 team-games played this season; changes need 500. The fit is shown for reference.", "alerts": []}, "history": [{"version": 1, "date": "2026-09-30", "weights": {"goalie": 0.2, "def": 0.4, "off": 0.4, "st": 0.0, "l5": 0.0, "fin": 0.0}, "why": "Initial backtest: offense and opponent defense carry most of the signal; PP/PK, last-5 and luck added nothing once those were in."}]};
+const $=s=>document.querySelector(s);
+const pct=(v,d=0)=>v==null?'—':(v*100).toFixed(d)+'%';
+const f2=v=>v==null?'—':(+v).toFixed(2);
+const heat=v=>`hsl(${Math.max(0,Math.min(100,v))*1.2} 62% 46%)`;
+const E=S.expect, WL={off:'Offense',def:'Opp defense',goalie:'Opp goalie',st:'PP vs PK',l5:'Goals L5',fin:'Finishing'};
+$('#hdr').textContent=`${S.season} · updated ${S.built} · model v${S.model_version}`;
+
+$('#alerts').innerHTML=S.alerts.length?`<div style="display:grid;gap:8px">${S.alerts.map(a=>`<div class="alert ${a.level}"><b>${a.title}</b><span class="sub">${a.body}</span></div>`).join('')}</div>`
+  :`<div class="alert ok"><b>All checks passing</b><span class="sub">Data refreshed, games logged and graded${S.graded>=500?', and the score is ranking games within its backtest range':''}.</span></div>`;
+
+const need=Math.max(0,500-S.graded);
+const aucPill=S.auc==null?'':S.graded<500?'<span class="pill p-mute">early</span>':S.auc_hi<E.auc_low?'<span class="pill p-bad">below backtest</span>':S.auc>=E.auc_low?'<span class="pill p-good">in range</span>':'<span class="pill p-warn">low edge of range</span>';
+$('#cards').innerHTML=[
+ ['Graded team-games',S.graded.toLocaleString(),need?`${need} more until accuracy alerts switch on`:`${S.logged.toLocaleString()} logged this season`],
+ ['Ranking accuracy',S.auc==null?'—':pct(S.auc,1),S.auc==null?'Waiting for graded games':`${aucPill} 95% range ${pct(S.auc_lo,1)}–${pct(S.auc_hi,1)}. Backtest seasons: ${pct(E.auc_low,1)}–${pct(E.auc_high,1)}.`],
+ ['Red spots: under 2.5 hit',S.red&&S.red.n?pct(S.red.under):'—',S.red?`${S.red.n} team totals scored under 35. League average under 2.5: ${pct(1-E.base_over)}.`:''],
+ ['Green spots: 3+ goals',S.green&&S.green.n?pct(S.green.over):'—',S.green?`${S.green.n} team totals scored 65+. League average: ${pct(E.base_over)}.`:''],
+ ['Goals vs projection',S.avg_goals==null?'—':`${f2(S.avg_goals)} / ${f2(S.avg_proj)}`,'Actual goals per team-game vs projected, season to date.'],
+].map(([k,v,d])=>`<div class="card"><span class="k">${k}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join('');
+
+const mid={'Under 30':15,'30–40':35,'40–50':45,'50–60':55,'60–70':65,'70+':85};
+$('#bands').innerHTML=S.bands?`<thead><tr><th class="l">Score</th><th>Team-games</th><th>Scored 3+</th><th>Under 2.5</th><th>Avg goals</th></tr></thead><tbody>${
+  S.bands.map(b=>`<tr><td class="l"><span class="pill" style="background:${heat(mid[b.band])};color:var(--ink)">${b.band}</span></td><td>${b.n}</td><td>${pct(b.over)}</td><td>${b.over==null?'—':pct(1-b.over)}</td><td>${f2(b.goals)}</td></tr>`).join('')}</tbody>`:'<tr><td class="empty">No graded games yet.</td></tr>';
+
+$('#inputs').innerHTML=S.inputs?`<thead><tr><th class="l">Input</th><th>Weight</th><th>This season</th><th>±</th><th>Backtest</th><th class="l">Status</th></tr></thead><tbody>${
+  S.inputs.map(i=>{let p='<span class="pill p-mute">too few games</span>';
+    if(i.rho!=null&&i.n>=300){p=i.rho+i.ci<0?'<span class="pill p-bad">pointing wrong way</span>':i.backtest!=null&&i.rho<i.backtest-i.ci?'<span class="pill p-warn">weaker than backtest</span>':'<span class="pill p-good">working</span>'}
+    return `<tr><td class="l">${i.label}</td><td>${Math.round(i.weight*100)}%</td><td>${i.rho==null?'—':(i.rho>=0?'+':'')+i.rho.toFixed(3)}</td><td>${i.ci==null?'—':'±'+i.ci.toFixed(3)}</td><td>${i.backtest==null?'—':'+'+i.backtest.toFixed(3)}</td><td class="l">${p}</td></tr>`}).join('')}</tbody>`:'<tr><td class="empty">No graded games yet.</td></tr>';
+
+$('#calib').innerHTML=S.calibration&&S.calibration.length?`<thead><tr><th class="l">Projected</th><th>Actual</th><th>Team-games</th></tr></thead><tbody>${
+  S.calibration.map(c=>`<tr><td class="l">${pct(c.pred)}</td><td>${pct(c.actual)}</td><td>${c.n}</td></tr>`).join('')}</tbody>`:'<tr><td class="empty">No graded games yet.</td></tr>';
+
+$('#days').innerHTML=S.days.length?`<thead><tr><th class="l">Date</th><th>Logged</th><th>Graded</th><th>Avg proj</th><th>Avg goals</th><th>Red spots under 2.5</th><th>No starter report</th></tr></thead><tbody>${
+  S.days.map(d=>`<tr><td class="l">${d.date}</td><td>${d.rows}</td><td>${d.graded}</td><td>${f2(d.proj)}</td><td>${f2(d.goals)}</td><td>${d.red_n?`${d.red_under} of ${d.red_n}`:'—'}</td><td>${d.default_goalies||0}</td></tr>`).join('')}</tbody>`:'<tr><td class="empty">Nothing logged yet. The first rows appear after the first game-day build.</td></tr>';
+
+const L=S.learn;
+$('#learnlede').textContent=L?`Last learner run ${L.date}: ${L.decision}. ${L.reason}`:'The weekly learner runs every Monday morning. Its first result will show here.';
+$('#hist').innerHTML=`<thead><tr><th class="l">Version</th><th class="l">Date</th>${Object.keys(WL).map(k=>`<th>${WL[k]}</th>`).join('')}<th class="l">Why</th></tr></thead><tbody>${
+  [...S.history].reverse().map(h=>`<tr><td class="l">v${h.version}</td><td class="l">${h.date}</td>${Object.keys(WL).map(k=>`<td>${Math.round((h.weights[k]||0)*100)}%</td>`).join('')}<td class="wrap">${h.why}</td></tr>`).join('')}</tbody>`;
+</script>
+</body></html>

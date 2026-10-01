@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "updated": "2026-09-30",
+  "note": "Set from the 2021-22 to 2025-26 backtest. learn.py updates this file weekly when the guardrails in README pass.",
+  "weights": {"goalie": 0.20, "def": 0.40, "off": 0.40, "st": 0.0, "l5": 0.0, "fin": 0.0},
+  "projection": {"home": 1.035, "away": 0.965, "b2b": 0.93, "oppB2b": 1.06, "shrink": 0.85},
+  "priorGames": 20,
+  "expect": {
+    "auc_low": 0.575,
+    "auc_high": 0.617,
+    "auc_all": 0.599,
+    "base_over": 0.599,
+    "base_goals": 3.085
+  },
+  "history": [
+    {"version": 1, "date": "2026-09-30", "weights": {"goalie": 0.20, "def": 0.40, "off": 0.40, "st": 0.0, "l5": 0.0, "fin": 0.0},
+     "why": "Initial backtest: offense and opponent defense carry most of the signal; PP/PK, last-5 and luck added nothing once those were in."}
+  ]
+}
