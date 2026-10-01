@@ -34,6 +34,16 @@ function makeEngine(DATA){
     return{g:(byTeam[ab]||[])[0],status:'Default'};
   }
   const pois=(k,l)=>{let p=Math.exp(-l),s=p;for(let i=1;i<=k;i++){p*=l/i;s+=p}return s};
+  const pmf=(k,l)=>{let p=Math.exp(-l);for(let i=1;i<=k;i++)p*=l/i;return p};
+  const SO=P.soShare||0;
+  // Books count the shootout winner as a goal. A team tied at k goes to k+1 half the time.
+  const teamUnder=(k,l,ol)=>pois(k,l)-0.5*SO*pmf(k,l)*pmf(k,ol);
+  // Game totals: shrink toward league average (backtest), then a k-k shootout tie becomes 2k+1.
+  function gameTotal(la,lh){
+    const m=2*LG.gf, raw=la+lh, t=m+(P.gameShrink??1)*(raw-m), q=t/raw;
+    const under=L=>pois(L,t)-(L%2===0?SO*pmf(L/2,la*q)*pmf(L/2,lh*q):0);
+    return {lam:t,u55:under(5),u65:under(6)};
+  }
   const american=p=>p>=0.5?String(Math.round(-100*p/(1-p))):'+'+Math.round(100*(1-p)/p);
   const playedOn=(d,ab)=>(DATA.schedule[d]||[]).some(g=>g.away===ab||g.home===ab);
   const prevDay=d=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()-1);return x.toISOString().slice(0,10)};
@@ -57,10 +67,14 @@ function makeEngine(DATA){
       let num=0,den=0,partial=false; for(const k in W){if(s[k]==null){if(W[k]>0)partial=true;continue}num+=s[k]*W[k];den+=W[k]}
       const fin=['FINAL','OFF'].includes(g.state), actual=side==='away'?g.awayScore:g.homeScore;
       out.push({g,key,ab,opp,t,o,ha:side==='home'?'Home':'Away',game:`${g.away} @ ${g.home}`,goalie,status,b2b,oppB2b,st,lam,
-        u25:pois(2,lam),u35:pois(3,lam),s,total:den?num/den:null,partial,final:fin,actual});
+        s,total:den?num/den:null,partial,final:fin,actual});
+    }
+    for(const r of out){                                   // under chances need the opponent's projection
+      const o=out.find(x=>x.g===r.g&&x.ab===r.opp), ol=o?o.lam:LG.gf;
+      r.u25=teamUnder(2,r.lam,ol); r.u35=teamUnder(3,r.lam,ol);
     }
     return out;
   }
-  return {M,T,AB,G,REC,LG,SC,byTeam,lowGood,highGood,projectedStarter,pois,american,prevDay,buildRows};
+  return {M,T,AB,G,REC,LG,SC,byTeam,lowGood,highGood,projectedStarter,pois,american,prevDay,buildRows,gameTotal};
 }
 if(typeof module!=='undefined')module.exports={makeEngine};

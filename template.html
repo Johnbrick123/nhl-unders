@@ -117,7 +117,7 @@ select.g{padding:4px 6px;border-radius:6px;font-size:12px;max-width:170px}
 <section id="view-matchups" style="display:none">
   <div class="toolbar"><select id="dateSel2" aria-label="Date"></select><span class="count">Uses the goalies and weights set on the Slate tab</span></div>
   <div class="wrap">
-    <div class="mh">Game totals <span class="msub">combined score — top = over spots, bottom (red) = best game unders</span></div>
+    <div class="mh">Game totals <span class="msub">sorted by projected total: top = over spots, bottom = best game unders. Combined = the two team scores added (0–200), like the MLB board.</span></div>
     <div class="scroll"><table id="tblTotal"></table></div>
     <div class="mh">Lopsided games <span class="msub">biggest gap between the two team totals — the red side is the under play</span></div>
     <div class="scroll"><table id="tblGap"></table></div>
@@ -237,14 +237,14 @@ $('#tbl').addEventListener('change',e=>{if(!e.target.matches('select.g'))return;
 const chip=v=>v==null?'<span class="mini" style="color:#5b6672">—</span>':`<span class="mini" style="background:${heat(v)}">${v.toFixed(1)}</span>`;
 function renderMatchups(rows){
   const by={}; for(const r of rows)(by[r.g.id]=by[r.g.id]||{g:r.g})[r.ha]=r;
-  const data=Object.values(by).filter(d=>d.Away&&d.Home).map(d=>{const A=d.Away,H=d.Home,lam=A.lam+H.lam;
-    return{...d,A,H,comb:A.total!=null&&H.total!=null?(A.total+H.total)/2:null,lam,u55:pois(5,lam),u65:pois(6,lam),
+  const data=Object.values(by).filter(d=>d.Away&&d.Home).map(d=>{const A=d.Away,H=d.Home,gt=E.gameTotal(A.lam,H.lam);
+    return{...d,A,H,comb:A.total!=null&&H.total!=null?A.total+H.total:null,lam:gt.lam,u55:gt.u55,u65:gt.u65,
       gap:A.total!=null&&H.total!=null?Math.abs(A.total-H.total):null,lean:A.total<=H.total?A:H}});
   const side=r=>`${r.ab} ${chip(r.total)}`;
-  let t=`<thead><tr><th class="l">#</th><th class="l">Game</th><th>Away</th><th>Home</th><th class="groupsep">Combined</th><th>Proj total</th><th>U5.5</th><th>U6.5</th><th class="l">Goalies</th></tr></thead><tbody>`;
-  [...data].sort((a,b)=>(b.comb??-1)-(a.comb??-1)).forEach((d,i)=>{t+=`<tr><td class="l sub">${i+1}</td><td class="l">${d.g.away} @ ${d.g.home}</td><td>${side(d.A)}</td><td>${side(d.H)}</td>
-    <td class="groupsep">${chip(d.comb)}</td><td>${d.lam.toFixed(2)}</td><td><b>${(d.u55*100).toFixed(0)}%</b> <span class="sub">${american(d.u55)}</span></td><td><b>${(d.u65*100).toFixed(0)}%</b> <span class="sub">${american(d.u65)}</span></td>
-    <td class="l sub">${d.H.goalie?d.H.goalie.last:'?'} / ${d.A.goalie?d.A.goalie.last:'?'}</td></tr>`});
+  let t=`<thead><tr><th class="l">#</th><th class="l">Game</th><th>Away</th><th>Home</th><th class="groupsep">Combined</th><th>Proj total ▼</th><th>U5.5</th><th>U6.5</th><th class="l">Goalies</th></tr></thead><tbody>`;
+  [...data].sort((a,b)=>b.lam-a.lam).forEach((d,i)=>{t+=`<tr><td class="l sub">${i+1}</td><td class="l">${d.g.away} @ ${d.g.home}</td><td>${side(d.A)}</td><td>${side(d.H)}</td>
+    <td class="groupsep">${d.comb==null?chip(null):`<span class="mini" style="background:${heat(d.comb/2)}">${d.comb.toFixed(1)}</span>`}</td><td><b>${d.lam.toFixed(2)}</b></td><td><b>${(d.u55*100).toFixed(0)}%</b> <span class="sub">${american(d.u55)}</span></td><td><b>${(d.u65*100).toFixed(0)}%</b> <span class="sub">${american(d.u65)}</span></td>
+    <td class="l sub">${d.g.away} ${d.H.goalie?d.H.goalie.last:'?'} · ${d.g.home} ${d.A.goalie?d.A.goalie.last:'?'}</td></tr>`});
   $('#tblTotal').innerHTML=t+'</tbody>';
   let s=`<thead><tr><th class="l">#</th><th class="l">Game</th><th>Away</th><th>Home</th><th class="groupsep">Gap</th><th class="l">Play</th></tr></thead><tbody>`;
   [...data].sort((a,b)=>(b.gap??-1)-(a.gap??-1)).forEach((d,i)=>{s+=`<tr><td class="l sub">${i+1}</td><td class="l">${d.g.away} @ ${d.g.home}</td><td>${side(d.A)}</td><td>${side(d.H)}</td>
@@ -305,6 +305,8 @@ $('#method').innerHTML=`
 </ul>
 <h3>Projection columns</h3>
 <p><b>Proj G</b> = league ${LG.gf.toFixed(2)} GF/G × offense × opponent defense × goalie × home ×${PJ.home} / away ×${PJ.away} × back-to-back (own team ×${PJ.b2b}, opponent ×${PJ.oppB2b}), then pulled ${Math.round((1-PJ.shrink)*100)}% toward league average. Model version ${DATA.model.version}, updated ${DATA.model.updated}; the weekly learner adjusts these from results. <b>U2.5</b> is the Poisson chance of 2 goals or fewer, with the fair American price next to it. Compare that price with your book: if the book pays more than fair, the under has value. The average team goes under 2.5 about 42% of the time.</p>
+<p><b>Shootouts:</b> books count the shootout winner as a goal, so every under chance (team and game) accounts for the chance of a tie going to a shootout.</p>
+<p><b>Game totals</b> add both teams' projections, then pull the total ${Math.round((1-(PJ.gameShrink??1))*100)}% toward the league average. In the backtest (6,560 games), unpulled totals were too confident: games the model called 52–57% to go under 5.5 actually went under about 48% of the time. With the pull, predicted and actual match within about 2 points.</p>
 <p>The Score ranks spots; the projection prices them. They usually agree. When they don't, it's because weights you changed aren't in the projection.</p>
 <p>Columns for zero-weight sub-scores are hidden. Raise a slider under Adjust weights and its column appears.</p>
 <h3>Spot tags</h3>
