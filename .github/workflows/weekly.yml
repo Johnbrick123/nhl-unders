@@ -45,6 +45,9 @@ jobs:
       - name: Backtest (all seasons + this season so far)
         run: python backtest/backtest.py
 
+      - name: Score-threshold rules
+        run: python backtest/rules.py
+
       - name: Learner (may update model.json)
         run: python backtest/learn.py
 

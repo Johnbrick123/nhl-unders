@@ -73,6 +73,14 @@ ul.plain{margin:0;padding-left:18px;display:grid;gap:5px;color:#c9d4de;max-width
     <div class="panel"><div class="bands" id="bands"></div></div>
   </section>
 
+  <section id="rules-sec">
+    <h2>Score thresholds: what happened at the extremes</h2>
+    <p class="lede" id="rules-lede"></p>
+    <div class="panel scroll"><table id="rules-team"></table></div>
+    <div class="panel scroll" style="margin-top:10px"><table id="rules-game"></table></div>
+    <p class="sub" id="rules-note" style="margin-top:8px"></p>
+  </section>
+
   <section>
     <h2>Which inputs predict goals</h2>
     <p class="lede">Each input tested on its own against goals scored. The bar is the correlation: 0 means no link. Hockey is random game to game, so 0.10–0.14 is about as strong as single inputs get. The right column compares the 20% of games where the input most favored scoring with the 20% where it least favored scoring.</p>
@@ -137,6 +145,25 @@ $('#bands').innerHTML=bn.map(b=>`<div class="brow"><span class="lab">${b.band}</
   <div class="btrack"><div class="bfill" style="width:${b.over*100}%;background:${heat(mid(b.band))}"></div><div class="btxt">${pct(b.over)} scored 3+</div><div class="bline" style="left:${base*100}%" title="League average ${pct(base)}"></div></div>
   <span class="meta">${b.goals.toFixed(2)} goals/gm · ${b.n.toLocaleString()} games</span></div>`).join('')+
   `<div class="sub" style="margin-top:6px">League average: ${pct(base)} of team-games had 3+ goals (${R.base_goals.toFixed(2)} goals per game). Score bands use the board's current weights.</div>`;
+
+/* threshold rules */
+if(R.rules){
+  const RR=R.rules, P=v=>v==null?'—':(v*100).toFixed(1)+'%';
+  $('#rules-lede').textContent=`Every game from ${RR.seasons[0]} to ${RR.seasons[RR.seasons.length-1]}, scored exactly the way the live board scores it, so a 30 here is a 30 on the board. Hit rates count the shootout winner's goal, the way books settle totals. "${RR.test}" is the most recent full season on its own, to show whether a rule still held.`;
+  const tbl=(kind,lines,heads)=>{
+    const rows=RR.rows.filter(r=>r.kind===kind);
+    return `<thead><tr><th class="l">${kind==='team'?'Team total':'Game total'}</th><th>Games</th><th>Share</th><th>Avg goals</th>${heads.map(h=>`<th class="groupsep">${h}</th><th>${RR.test}</th>`).join('')}<th class="groupsep">Worst case (95%)</th></tr></thead><tbody>${
+      rows.map(r=>{const side=r.side, bet=k=>side==='over'?1-r.hits[k]:r.hits[k], tb=k=>r.test&&r.test[k]!=null?(side==='over'?1-r.test[k]:r.test[k]):null;
+        const base=RR.rows.find(x=>x.kind===kind&&x.side==='all');
+        const cell=k=>{const v=bet(k),b=side==='over'?1-base.hits[k]:base.hits[k];const d=v-b;
+          return `<td class="groupsep"><b>${P(v)}</b>${side==='all'?'':` <span class="sub" style="color:${d>0?'var(--good)':'var(--bad)'}">${d>0?'+':''}${(d*100).toFixed(1)}</span>`}</td><td class="sub">${P(tb(k))}</td>`};
+        const lab=side==='all'?r.label:`${r.label} → ${side==='over'?'over':'under'}`;
+        const fl=side==='all'?'—':lines.map(k=>`${k.toUpperCase().replace('U',side==='over'?'O':'U')} ${P(r.floor[k])}`).join(' · ');
+        return `<tr${side==='all'?' style="color:var(--muted)"':''}><td class="l">${lab}</td><td>${r.n.toLocaleString()}</td><td>${(r.share*100).toFixed(1)}%</td><td>${r.avg_goals}</td>${lines.map(cell).join('')}<td class="groupsep sub">${fl}</td></tr>`}).join('')}</tbody>`};
+  $('#rules-team').innerHTML=tbl('team',['u2.5','u3.5'],['Hit 2.5','Hit 3.5']);
+  $('#rules-game').innerHTML=tbl('game',['u5.5','u6.5'],['Hit 5.5','Hit 6.5']);
+  $('#rules-note').textContent=`"Hit" is the share of games where the side you'd bet won: the under for low scores, the over for high scores. The small number next to it is the difference from betting that side blindly on every game. Worst case is the 95% lower bound on the hit rate given the sample size. Small samples (a few dozen games) can look great by luck. Middle 50% of team scores: ${RR.dist.team[1]}–${RR.dist.team[3]}; of combined scores: ${RR.dist.game[1]}–${RR.dist.game[3]}.`;
+} else { $('#rules-sec').hidden=true; }
 
 /* inputs */
 const verdict={"Offense rating":"keep","Opp xGA/G":"keep","Opp goalie factor (shrunk)":"keep","Opp goalie GSAx":"keep","Home ice":"keep","Team on back-to-back":"keep","Opp on back-to-back":"keep",
