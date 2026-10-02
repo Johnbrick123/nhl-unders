@@ -1,9 +1,9 @@
 {
  "season": "2026-27",
  "logged": 18,
- "graded": 2,
+ "graded": 8,
  "today": "2026-10-01",
- "built": "2026-10-01 14:51",
+ "built": "2026-10-01 22:16",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -20,43 +20,43 @@
   "base_over": 0.599,
   "base_goals": 3.085
  },
- "over_rate": 1.0,
- "avg_goals": 6.0,
- "avg_proj": 2.9975,
- "auc": null,
- "auc_lo": null,
- "auc_hi": null,
- "auc_proj": null,
+ "over_rate": 0.75,
+ "avg_goals": 4.0,
+ "avg_proj": 2.9053750000000003,
+ "auc": 0.375,
+ "auc_lo": -0.11467865337018074,
+ "auc_hi": 0.8646786533701807,
+ "auc_proj": 0.6666666666666666,
  "bands": [
   {
    "band": "Under 30",
-   "n": 1,
+   "n": 2,
    "over": 1.0,
-   "goals": 4.0
+   "goals": 4.5
   },
   {
    "band": "30\u201340",
-   "n": 0,
-   "over": null,
-   "goals": null
+   "n": 2,
+   "over": 0.5,
+   "goals": 2.5
   },
   {
    "band": "40\u201350",
-   "n": 0,
-   "over": null,
-   "goals": null
+   "n": 1,
+   "over": 1.0,
+   "goals": 6.0
   },
   {
    "band": "50\u201360",
-   "n": 0,
-   "over": null,
-   "goals": null
+   "n": 1,
+   "over": 1.0,
+   "goals": 3.0
   },
   {
    "band": "60\u201370",
-   "n": 1,
-   "over": 1.0,
-   "goals": 8.0
+   "n": 2,
+   "over": 0.5,
+   "goals": 4.5
   },
   {
    "band": "70+",
@@ -69,9 +69,23 @@
   {
    "lo": 0.45,
    "hi": 0.5,
+   "n": 3,
+   "pred": 0.457,
+   "actual": 0.6666666666666666
+  },
+  {
+   "lo": 0.55,
+   "hi": 0.6,
    "n": 1,
-   "pred": 0.451,
+   "pred": 0.572,
    "actual": 1.0
+  },
+  {
+   "lo": 0.6,
+   "hi": 0.65,
+   "n": 3,
+   "pred": 0.6096666666666667,
+   "actual": 0.6666666666666666
   },
   {
    "lo": 0.65,
@@ -85,7 +99,7 @@
   {
    "key": "off",
    "label": "Offense",
-   "n": 2,
+   "n": 8,
    "rho": null,
    "ci": null,
    "backtest": 0.1337,
@@ -94,7 +108,7 @@
   {
    "key": "def",
    "label": "Opp defense",
-   "n": 2,
+   "n": 8,
    "rho": null,
    "ci": null,
    "backtest": 0.1253,
@@ -103,7 +117,7 @@
   {
    "key": "goalie",
    "label": "Opp goalie",
-   "n": 2,
+   "n": 8,
    "rho": null,
    "ci": null,
    "backtest": 0.0667,
@@ -112,7 +126,7 @@
   {
    "key": "st",
    "label": "PP vs PK",
-   "n": 2,
+   "n": 8,
    "rho": null,
    "ci": null,
    "backtest": 0.1093,
@@ -130,7 +144,7 @@
   {
    "key": "fin",
    "label": "Finishing",
-   "n": 2,
+   "n": 8,
    "rho": null,
    "ci": null,
    "backtest": 0.0268,
@@ -138,8 +152,8 @@
   }
  ],
  "red": {
-  "n": 1,
-  "under": 0.0
+  "n": 3,
+  "under": 0.3333333333333333
  },
  "green": {
   "n": 0,
@@ -149,11 +163,11 @@
   {
    "date": "2026-10-01",
    "rows": 16,
-   "graded": 0,
+   "graded": 6,
    "proj": 3.016125,
-   "goals": null,
-   "red_n": 0,
-   "red_under": 0,
+   "goals": 3.3333333333333335,
+   "red_n": 2,
+   "red_under": 1,
    "default_goalies": 0
   },
   {
