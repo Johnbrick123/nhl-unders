@@ -1,9 +1,9 @@
 {
  "season": "2026-27",
- "logged": 164,
+ "logged": 196,
  "graded": 164,
- "today": "2026-10-12",
- "built": "2026-10-12 23:02",
+ "today": "2026-10-13",
+ "built": "2026-10-13 02:43",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -182,6 +182,16 @@
  },
  "days": [
   {
+   "date": "2026-10-13",
+   "rows": 32,
+   "graded": 0,
+   "proj": 3.03340625,
+   "goals": null,
+   "red_n": 0,
+   "red_under": 0,
+   "default_goalies": 1
+  },
+  {
    "date": "2026-10-12",
    "rows": 6,
    "graded": 6,
@@ -312,6 +322,6 @@
    "default_goalies": 0
   }
  ],
- "games_today": 3,
+ "games_today": 16,
  "alerts": []
 }
