@@ -48,6 +48,7 @@ ul.plain{margin:0;padding-left:18px;display:grid;gap:5px;color:#c9d4de;max-width
   <section><h2>Score bands this season</h2><p class="lede">Pregame score vs what happened. Green bands should score 3+ more often than red ones.</p><div class="panel"><table id="bands"></table></div></section>
   <section><h2>Is each input still working?</h2><p class="lede">Correlation between each sub-score and goals this season, next to the backtest. Hockey is noisy: with a few hundred games, ±0.08 is normal wobble. The ± column shows that range.</p><div class="panel"><table id="inputs"></table></div></section>
   <section><h2>Projected chance of 3+ vs actual</h2><div class="panel"><table id="calib"></table></div></section>
+  <section><h2>Starting goalies: logged vs actual</h2><p class="lede">The goalie each row was scored against at its last pregame update, checked against who actually started. The board marks Projected and No report rows as Unconfirmed.</p><div class="panel"><table id="goalies"></table></div></section>
   <section><h2>Last 14 days</h2><p class="lede">Red spots are team totals scored under 35 (the board's under plays).</p><div class="panel"><table id="days"></table></div></section>
   <section><h2>Model and learning</h2><p class="lede" id="learnlede"></p><div class="panel"><table id="hist"></table></div></section>
   <section><h2>How alerts reach you</h2><ul class="plain">
@@ -90,6 +91,9 @@ $('#inputs').innerHTML=S.inputs?`<thead><tr><th class="l">Input</th><th>Weight</
 $('#calib').innerHTML=S.calibration&&S.calibration.length?`<thead><tr><th class="l">Projected</th><th>Actual</th><th>Team-games</th></tr></thead><tbody>${
   S.calibration.map(c=>`<tr><td class="l">${pct(c.pred)}</td><td>${pct(c.actual)}</td><td>${c.n}</td></tr>`).join('')}</tbody>`:'<tr><td class="empty">No graded games yet.</td></tr>';
 
+const GA=S.goalie_accuracy||{}, GL={Confirmed:'Confirmed',Likely:'Likely',Projected:'Projected',Default:'No report'};
+$('#goalies').innerHTML=Object.keys(GA).length?`<thead><tr><th class="l">Status at last update</th><th>Rows</th><th>Right goalie</th><th>Share right</th></tr></thead><tbody>${
+  Object.keys(GL).filter(k=>GA[k]).map(k=>{const v=GA[k],p=v.right/v.n;return `<tr><td class="l">${GL[k]}</td><td>${v.n}</td><td>${v.right}</td><td><span class="pill ${p>=.95?'p-good':p>=.75?'p-warn':'p-bad'}">${pct(p)}</span></td></tr>`}).join('')}</tbody>`:'<tr><td class="empty">No graded games with starter data yet.</td></tr>';
 $('#days').innerHTML=S.days.length?`<thead><tr><th class="l">Date</th><th>Logged</th><th>Graded</th><th>Avg proj</th><th>Avg goals</th><th>Red spots under 2.5</th><th>No starter report</th></tr></thead><tbody>${
   S.days.map(d=>`<tr><td class="l">${d.date}</td><td>${d.rows}</td><td>${d.graded}</td><td>${f2(d.proj)}</td><td>${f2(d.goals)}</td><td>${d.red_n?`${d.red_under} of ${d.red_n}`:'—'}</td><td>${d.default_goalies||0}</td></tr>`).join('')}</tbody>`:'<tr><td class="empty">Nothing logged yet. The first rows appear after the first game-day build.</td></tr>';
 

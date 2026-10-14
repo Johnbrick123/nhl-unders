@@ -145,6 +145,26 @@ def main():
                       f"Over the last {len(recent)} graded team-games, teams averaged {mean(act):.2f} goals against {mean(pr):.2f} projected. "
                       f"League scoring may have shifted. The board's league average updates as games are played, so this often fixes itself; "
                       f"if it persists two weeks, the projection shrink in model.json should be refit.")
+    # -- starting goalies: was the logged goalie the one who actually started?
+    ga = {}
+    for r in rows:
+        if r.get("opp_starter_id"):
+            d = ga.setdefault(r["goalie_status"], {"n": 0, "right": 0})
+            d["n"] += 1
+            d["right"] += int(r["opp_starter_id"] == r["goalie_id"])
+    st["goalie_accuracy"] = ga
+    firm = [ga[k] for k in ("Confirmed", "Likely") if k in ga]
+    fn, fr = sum(d["n"] for d in firm), sum(d["right"] for d in firm)
+    if fn >= 30 and fr / fn < 0.95:
+        alert("confirmed-goalie-wrong", "action", "Confirmed starters are coming through wrong",
+              f"Only {fr} of {fn} Confirmed/Likely goalies matched who actually started. Daily Faceoff's page or the name matching "
+              f"has probably changed, so the goalie part of every score may be off. Check the starters() step in build.py.")
+    pj = ga.get("Projected", {"n": 0, "right": 0})
+    if pj["n"] >= 30 and pj["right"] / pj["n"] < 0.6:
+        alert("projected-goalie-weak", "watch", "Projected starters are often wrong",
+              f"Projected goalies were right {pj['right']} of {pj['n']} times ({pj['right'] / pj['n']:.0%}). Treat Unconfirmed rows on the board "
+              f"with extra caution, or wait for confirmations before using them.")
+
     # -- daily table, last 14 days
     days = sorted({r["date"] for r in rows})[-14:]
     st["days"] = []

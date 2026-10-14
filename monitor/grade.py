@@ -23,7 +23,11 @@ def main():
     for path in sorted(HERE.glob("log_*.csv")):
         with open(path, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
-            fields, rows = reader.fieldnames, list(reader)
+            fields, rows = list(reader.fieldnames), list(reader)
+        if "opp_starter_id" not in fields:
+            fields.append("opp_starter_id")
+            for r in rows:
+                r["opp_starter_id"] = ""
         todo = sorted({r["date"] for r in rows if r["actual"] == ""})
         graded = 0
         for d in todo:
@@ -43,6 +47,21 @@ def main():
                 r["last_period"] = (g.get("gameOutcome") or {}).get("lastPeriodType", "")
                 r["graded_at"] = stamp
                 graded += 1
+        # who actually started in goal against each logged team (scores Daily Faceoff's projections)
+        need = sorted({r["gameId"] for r in rows if r["actual"] != "" and not r.get("opp_starter_id")})
+        for gid in need:
+            try:
+                bs = get(f"https://api-web.nhle.com/v1/gamecenter/{gid}/boxscore")
+            except Exception:
+                continue
+            started = {}
+            for side in ("awayTeam", "homeTeam"):
+                for gk in bs.get("playerByGameStats", {}).get(side, {}).get("goalies", []):
+                    if gk.get("starter"):
+                        started[bs[side]["abbrev"]] = str(gk["playerId"])
+            for r in rows:
+                if r["gameId"] == gid and r["opp"] in started:
+                    r["opp_starter_id"] = started[r["opp"]]
         with open(path, "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=fields)
             w.writeheader()

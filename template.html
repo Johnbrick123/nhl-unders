@@ -57,6 +57,10 @@ td.na{color:#5b6672}
 .tags{display:flex;gap:4px;flex-wrap:nowrap}
 select.g{padding:4px 6px;border-radius:6px;font-size:12px;max-width:170px}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px}
+.gbanner{margin:10px 12px 0;padding:9px 14px;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;background:var(--panel);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.gbanner.ok{border-left-color:var(--good)} .gbanner b{color:var(--txt)} .gbanner .sub{font-size:12px}
+.ucf{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;font-size:10.5px;font-weight:650;background:rgba(240,198,116,.14);color:var(--warn);vertical-align:1px;white-space:nowrap}
+tr.unconf td{background:rgba(240,198,116,.035)}
 .dot.Confirmed{background:var(--good)} .dot.Likely{background:var(--warn)} .dot.Projected{background:var(--accent)} .dot.Default{background:#5b6672} .dot.Yourpick{background:#c792ea}
 .res.hit{color:var(--good);font-weight:650} .res.miss{color:var(--bad);font-weight:650}
 .pct b{font-weight:650}
@@ -100,6 +104,7 @@ select.g{padding:4px 6px;border-radius:6px;font-size:12px;max-width:170px}
     <select id="dateSel" aria-label="Date"></select>
     <input type="search" id="q" placeholder="Filter team, goalie, game…" aria-label="Filter">
     <select id="haFilter" aria-label="Home or away"><option value="">All games</option><option>Home</option><option>Away</option></select>
+    <select id="gFilter" aria-label="Goalie status"><option value="">All goalies</option><option value="firm">Confirmed or likely only</option></select>
     <label class="lbl">Min score <input type="number" id="minScore" value="0" min="0" max="100"></label>
     <button class="ghost" id="toggleInputs">Show raw inputs</button>
     <button class="ghost" id="toggleWeights">Adjust weights ▾</button>
@@ -107,9 +112,10 @@ select.g{padding:4px 6px;border-radius:6px;font-size:12px;max-width:170px}
     <span class="count" id="count"></span>
   </div>
   <div class="weights" id="weights"></div>
+  <div class="gbanner" id="gbanner" hidden></div>
   <div class="wrap scroll"><table id="tbl"></table></div>
   <div class="keys">
-    <span>Goalie: <span class="dot Confirmed"></span> Confirmed <span class="dot Likely"></span> Likely <span class="dot Projected"></span> Projected <span class="dot Default"></span> No report (most-used goalie) <span class="dot Yourpick"></span> Your pick</span>
+    <span>Goalie: <span class="dot Confirmed"></span> Confirmed <span class="dot Likely"></span> Likely <span class="dot Projected"></span> Projected <span class="dot Default"></span> No report (most-used goalie) · <span class="ucf">Unconfirmed</span> = Projected or no report, before puck drop <span class="dot Yourpick"></span> Your pick</span>
   </div>
   <div class="note">Each row = one team's offense vs the opposing goalie + skaters. Higher = better spot to score (green). Low/red = under spot. <span class="formula" id="formulaText"></span></div>
 </section>
@@ -194,11 +200,24 @@ function spotTags(r){const t=[];
   if(r.goalie&&!r.goalie.xga)t.push('<span class="pk pk-flat" title="No NHL sample for this goalie">New G</span>');
   return t.length?`<span class="tags">${t.join('')}</span>`:'<span class="sub" style="opacity:.45">—</span>'}
 
+// A starter counts as unconfirmed when Daily Faceoff only projects him (or has no report) and the game hasn't started.
+const isUnconf=r=>['Projected','Default'].includes(r.status)&&['FUT','PRE'].includes(r.g.state);
+function goalieBanner(rows){
+  const el=$('#gbanner'), pre=rows.filter(r=>['FUT','PRE'].includes(r.g.state));
+  if(!pre.length){el.hidden=true;return}
+  const un=pre.filter(isUnconf), A=DATA.goalieAccuracy||{}, acc=k=>A[k]&&A[k].n>=10?Math.round(A[k].right/A[k].n*100)+'%':null;
+  const hist=[acc('Projected')&&`Projected starters have been right ${acc('Projected')} of the time this season`,acc('Default')&&`no-report guesses ${acc('Default')}`].filter(Boolean).join(', ');
+  el.hidden=false; el.classList.toggle('ok',!un.length);
+  el.innerHTML=un.length
+    ?`<b>⚠ ${un.length} of ${pre.length} opposing starters not confirmed yet.</b><span class="sub">Those rows are marked Unconfirmed, and their scores may change when the starter is named (usually by mid-afternoon ET; some only at warmups).${hist?' '+hist+'.':''} Last refresh ${DATA.built} ET.</span>`
+    :`<b>All starters confirmed or likely</b><span class="sub">for games that haven't started. Last refresh ${DATA.built} ET.</span>`;
+}
 function render(){
   scoreCols=ALL_SCORE_COLS.filter(c=>W[c.k]>0);
-  const rows=buildRows(curDate), q=$('#q').value.trim().toLowerCase(), ha=$('#haFilter').value, minS=+$('#minScore').value||0;
+  const rows=buildRows(curDate), q=$('#q').value.trim().toLowerCase(), ha=$('#haFilter').value, minS=+$('#minScore').value||0, gf=$('#gFilter').value;
+  goalieBanner(rows);
   const hasFinal=rows.some(r=>r.final);
-  let view=rows.filter(r=>(!ha||r.ha===ha)&&(!minS||(r.total!=null&&r.total>=minS))&&
+  let view=rows.filter(r=>(!ha||r.ha===ha)&&(!minS||(r.total!=null&&r.total>=minS))&&(!gf||!isUnconf(r))&&
     (!q||`${r.ab} ${r.t.name} ${r.opp} ${r.o.name} ${r.goalie?r.goalie.name:''} ${r.game}`.toLowerCase().includes(q)));
   const val=(r,k)=>k==='total'?r.total:k in r.s?r.s[k]:k==='team'?r.ab:k==='game'?r.game:k==='ha'?r.ha:k==='lam'?r.lam:k==='u25'?r.u25:k==='res'?r.actual:(inputCols.find(c=>c.k===k)||{v:()=>null}).v(r);
   view.sort((a,b)=>{let av=val(a,sortKey),bv=val(b,sortKey);
@@ -214,9 +233,10 @@ function render(){
   let body='<tbody>';
   for(const r of view){
     const opts=(byTeam[r.opp]||[]).map(x=>`<option value="${x.id}"${r.goalie&&x.id===r.goalie.id?' selected':''}>${x.name}${x.xga?` (${x.gsax>0?'+':''}${x.gsax.toFixed(1)})`:''}</option>`).join('');
-    body+=`<tr><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td>
+    const un=isUnconf(r);
+    body+=`<tr${un?' class="unconf"':''}><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td>
       <td class="l"><span class="ha ${r.ha}">${r.ha}</span></td>
-      <td class="l"><select class="g" data-k="${r.key}" aria-label="${r.opp} goalie">${opts}</select><span class="dot ${r.status.replace(/\s/g,'')}" title="${r.status}"></span></td>`;
+      <td class="l"><select class="g" data-k="${r.key}" aria-label="${r.opp} goalie">${opts}</select><span class="dot ${r.status.replace(/\s/g,'')}" title="${r.status}"></span>${un?`<span class="ucf" title="Daily Faceoff ${r.status==='Default'?'has no report yet, so this is the most-used goalie':'only projects this starter'}. The score may change.">Unconfirmed</span>`:''}</td>`;
     if(showInputs)inputCols.forEach((c,i)=>{const v=c.v(r);body+=`<td class="${v==null?'na':''} ${i?'':'groupsep'}">${fmt(v,c.d)}</td>`});
     scoreCols.forEach((c,i)=>{const v=r.s[c.k],bg=heat(v);body+=`<td class="cellscore ${i?'':'groupsep'}" style="${v==null?'':`background:${bg}22;color:${bg}`}">${v==null?'—':v.toFixed(0)}</td>`});
     body+=`<td class="l groupsep">${spotTags(r)}</td><td>${r.lam.toFixed(2)}</td>
@@ -318,7 +338,7 @@ $('#method').innerHTML=`
 document.querySelectorAll('#tabs .tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('active',x===t));
   ['slate','matchups','teams','goalies','method'].forEach(v=>$('#view-'+v).style.display=v===t.dataset.tab?'':'none')});
-$('#q').oninput=render; $('#haFilter').onchange=render; $('#minScore').oninput=render;
+$('#q').oninput=render; $('#haFilter').onchange=render; $('#gFilter').onchange=render; $('#minScore').oninput=render;
 $('#toggleInputs').onclick=e=>{showInputs=!showInputs;e.target.classList.toggle('on',showInputs);e.target.textContent=showInputs?'Hide raw inputs':'Show raw inputs';render()};
 $('#toggleWeights').onclick=e=>{const o=$('#weights').classList.toggle('open');e.target.classList.toggle('on',o)};
 buildWeights(); renderTeams(); renderGoalies(); render();

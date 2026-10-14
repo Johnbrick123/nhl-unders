@@ -227,6 +227,9 @@ def main():
                 recent=recent(list(teams)),
                 starters=starters(upcoming))
     data["model"] = MODEL
+    status = HERE / "monitor" / "status.json"          # this season's goalie-status accuracy, for the board's banner
+    if status.exists():
+        data["goalieAccuracy"] = json.loads(status.read_text(encoding="utf-8")).get("goalie_accuracy", {})
     prev = HERE / "data.json"
     if prev.exists():                       # keep the old timestamp if nothing else changed (no empty commits)
         old = json.loads(prev.read_text(encoding="utf-8"))
@@ -250,7 +253,7 @@ def main():
 
 LOG_FIELDS = ["date", "gameId", "start", "team", "opp", "ha", "goalie_id", "goalie", "goalie_status",
               "s_goalie", "s_def", "s_off", "s_st", "s_l5", "s_fin", "score", "proj", "p_over",
-              "b2b", "opp_b2b", "model_version", "logged_at", "actual", "last_period", "graded_at"]
+              "b2b", "opp_b2b", "model_version", "logged_at", "actual", "last_period", "graded_at", "opp_starter_id"]
 
 
 def log_path(data):
