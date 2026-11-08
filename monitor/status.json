@@ -3,7 +3,7 @@
  "logged": 550,
  "graded": 538,
  "today": "2026-11-08",
- "built": "2026-11-08 00:53",
+ "built": "2026-11-08 13:20",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -187,8 +187,8 @@
  },
  "goalie_accuracy": {
   "Confirmed": {
-   "n": 333,
-   "right": 333
+   "n": 334,
+   "right": 334
   },
   "Likely": {
    "n": 84,
@@ -199,7 +199,7 @@
    "right": 66
   },
   "Default": {
-   "n": 27,
+   "n": 28,
    "right": 7
   }
  },
@@ -208,7 +208,7 @@
    "date": "2026-11-08",
    "rows": 12,
    "graded": 0,
-   "proj": 3.0996666666666663,
+   "proj": 3.0796666666666668,
    "goals": null,
    "red_n": 0,
    "red_under": 0,
