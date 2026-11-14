@@ -3,7 +3,7 @@
  "logged": 636,
  "graded": 608,
  "today": "2026-11-14",
- "built": "2026-11-14 01:10",
+ "built": "2026-11-14 13:43",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -187,8 +187,8 @@
  },
  "goalie_accuracy": {
   "Confirmed": {
-   "n": 375,
-   "right": 375
+   "n": 377,
+   "right": 377
   },
   "Likely": {
    "n": 92,
@@ -208,7 +208,7 @@
    "date": "2026-11-14",
    "rows": 28,
    "graded": 0,
-   "proj": 3.0388571428571427,
+   "proj": 3.0401785714285716,
    "goals": null,
    "red_n": 0,
    "red_under": 0,
