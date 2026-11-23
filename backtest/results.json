@@ -1,5 +1,5 @@
 {
- "n": 13780,
+ "n": 13874,
  "seasons": [
   "2021-22",
   "2022-23",
@@ -9,333 +9,333 @@
   "2026-27 (to date)"
  ],
  "current": "2026-27 (to date)",
- "current_n": 660,
- "data_through": "2026-11-15",
- "base_over": 0.5984,
- "base_goals": 3.087,
+ "current_n": 754,
+ "data_through": "2026-11-22",
+ "base_over": 0.5992,
+ "base_goals": 3.089,
  "inputs": [
   {
    "label": "Team GF/G",
    "group": "team",
-   "rho": 0.1317,
-   "auc": 0.5687,
+   "rho": 0.1305,
+   "auc": 0.568,
    "binary": false,
-   "low_over": 0.5207,
-   "high_over": 0.668,
-   "low_goals": 2.781,
+   "low_over": 0.5225,
+   "high_over": 0.6677,
+   "low_goals": 2.787,
    "high_goals": 3.365
   },
   {
    "label": "Team xGF/G",
    "group": "team",
-   "rho": 0.1261,
-   "auc": 0.5649,
+   "rho": 0.1249,
+   "auc": 0.5641,
    "binary": false,
-   "low_over": 0.512,
-   "high_over": 0.6742,
-   "low_goals": 2.744,
-   "high_goals": 3.385
+   "low_over": 0.5135,
+   "high_over": 0.6739,
+   "low_goals": 2.747,
+   "high_goals": 3.386
   },
   {
    "label": "Team shots/G",
    "group": "team",
-   "rho": 0.1018,
-   "auc": 0.5535,
+   "rho": 0.0996,
+   "auc": 0.5519,
    "binary": false,
-   "low_over": 0.5392,
-   "high_over": 0.6756,
-   "low_goals": 2.874,
-   "high_goals": 3.379
+   "low_over": 0.5413,
+   "high_over": 0.6753,
+   "low_goals": 2.876,
+   "high_goals": 3.381
   },
   {
    "label": "Team Sh%",
    "group": "team",
-   "rho": 0.0665,
-   "auc": 0.5341,
+   "rho": 0.067,
+   "auc": 0.5348,
    "binary": false,
-   "low_over": 0.5512,
-   "high_over": 0.6255,
-   "low_goals": 2.871,
-   "high_goals": 3.191
+   "low_over": 0.5517,
+   "high_over": 0.6277,
+   "low_goals": 2.872,
+   "high_goals": 3.197
   },
   {
    "label": "Team PP goals/G",
    "group": "team",
-   "rho": 0.0988,
-   "auc": 0.551,
+   "rho": 0.098,
+   "auc": 0.5507,
    "binary": false,
-   "low_over": 0.5337,
-   "high_over": 0.668,
-   "low_goals": 2.854,
-   "high_goals": 3.372
+   "low_over": 0.5344,
+   "high_over": 0.6685,
+   "low_goals": 2.855,
+   "high_goals": 3.373
   },
   {
    "label": "Goals L5",
    "group": "team",
    "rho": 0.0605,
-   "auc": 0.5284,
+   "auc": 0.528,
    "binary": false,
-   "low_over": 0.5657,
-   "high_over": 0.6274,
-   "low_goals": 2.943,
-   "high_goals": 3.228
+   "low_over": 0.5665,
+   "high_over": 0.6282,
+   "low_goals": 2.945,
+   "high_goals": 3.231
   },
   {
    "label": "Goals L10",
    "group": "team",
-   "rho": 0.0796,
-   "auc": 0.5415,
+   "rho": 0.0788,
+   "auc": 0.5408,
    "binary": false,
-   "low_over": 0.5476,
-   "high_over": 0.6424,
-   "low_goals": 2.882,
-   "high_goals": 3.288
+   "low_over": 0.549,
+   "high_over": 0.6419,
+   "low_goals": 2.887,
+   "high_goals": 3.287
   },
   {
    "label": "Luck (GF \u00f7 xGF)",
    "group": "team",
-   "rho": 0.0255,
-   "auc": 0.5152,
+   "rho": 0.025,
+   "auc": 0.515,
    "binary": false,
-   "low_over": 0.5704,
-   "high_over": 0.6147,
+   "low_over": 0.5705,
+   "high_over": 0.6159,
    "low_goals": 2.965,
    "high_goals": 3.142
   },
   {
    "label": "Offense rating",
    "group": "team",
-   "rho": 0.1371,
-   "auc": 0.5711,
+   "rho": 0.1356,
+   "auc": 0.5702,
    "binary": false,
-   "low_over": 0.5185,
-   "high_over": 0.6851,
-   "low_goals": 2.767,
+   "low_over": 0.5204,
+   "high_over": 0.6847,
+   "low_goals": 2.774,
    "high_goals": 3.422
   },
   {
    "label": "Opp xGA/G",
    "group": "opp",
-   "rho": 0.1274,
-   "auc": 0.5621,
+   "rho": 0.1281,
+   "auc": 0.5627,
    "binary": false,
-   "low_over": 0.5359,
-   "high_over": 0.6745,
-   "low_goals": 2.817,
-   "high_goals": 3.418
+   "low_over": 0.5369,
+   "high_over": 0.676,
+   "low_goals": 2.818,
+   "high_goals": 3.422
   },
   {
    "label": "Opp GA/G",
    "group": "opp",
-   "rho": 0.1365,
-   "auc": 0.565,
+   "rho": 0.1372,
+   "auc": 0.5655,
    "binary": false,
-   "low_over": 0.5308,
-   "high_over": 0.6898,
-   "low_goals": 2.781,
-   "high_goals": 3.491
+   "low_over": 0.5315,
+   "high_over": 0.6908,
+   "low_goals": 2.779,
+   "high_goals": 3.492
   },
   {
    "label": "Opp shots against/G",
    "group": "opp",
-   "rho": 0.1144,
-   "auc": 0.5542,
+   "rho": 0.1129,
+   "auc": 0.5533,
    "binary": false,
-   "low_over": 0.5588,
-   "high_over": 0.6883,
-   "low_goals": 2.907,
-   "high_goals": 3.472
+   "low_over": 0.5611,
+   "high_over": 0.6876,
+   "low_goals": 2.913,
+   "high_goals": 3.469
   },
   {
    "label": "Opp PK goals allowed/G",
    "group": "opp",
    "rho": 0.0542,
-   "auc": 0.5216,
+   "auc": 0.5217,
    "binary": false,
-   "low_over": 0.5842,
-   "high_over": 0.6299,
-   "low_goals": 3.021,
-   "high_goals": 3.258
+   "low_over": 0.5845,
+   "high_over": 0.6306,
+   "low_goals": 3.022,
+   "high_goals": 3.259
   },
   {
    "label": "Opp goalie GSAx",
    "group": "opp",
-   "rho": 0.0707,
-   "auc": 0.5343,
+   "rho": 0.0718,
+   "auc": 0.5349,
    "binary": false,
-   "low_over": 0.5657,
-   "high_over": 0.6473,
+   "low_over": 0.5654,
+   "high_over": 0.649,
    "low_goals": 2.918,
-   "high_goals": 3.286
+   "high_goals": 3.294
   },
   {
    "label": "Opp goalie factor (shrunk)",
    "group": "opp",
-   "rho": 0.0667,
-   "auc": 0.5322,
+   "rho": 0.0676,
+   "auc": 0.5327,
    "binary": false,
-   "low_over": 0.5653,
-   "high_over": 0.648,
+   "low_over": 0.565,
+   "high_over": 0.6494,
    "low_goals": 2.931,
-   "high_goals": 3.292
+   "high_goals": 3.298
   },
   {
    "label": "PP vs PK matchup",
    "group": "matchup",
-   "rho": 0.1101,
+   "rho": 0.1097,
    "auc": 0.5528,
    "binary": false,
-   "low_over": 0.5403,
-   "high_over": 0.6636,
-   "low_goals": 2.845,
+   "low_over": 0.5402,
+   "high_over": 0.6638,
+   "low_goals": 2.844,
    "high_goals": 3.403
   },
   {
    "label": "Home ice",
    "group": "spot",
-   "rho": 0.0585,
-   "auc": 0.5219,
+   "rho": 0.058,
+   "auc": 0.5215,
    "binary": true,
-   "yes_goals": 3.194,
-   "no_goals": 2.979,
-   "yes_over": 0.6194,
-   "no_over": 0.5774,
-   "yes_n": 6890
+   "yes_goals": 3.196,
+   "no_goals": 2.982,
+   "yes_over": 0.6199,
+   "no_over": 0.5785,
+   "yes_n": 6937
   },
   {
    "label": "Team on back-to-back",
    "group": "spot",
-   "rho": 0.0492,
-   "auc": 0.5162,
+   "rho": 0.0484,
+   "auc": 0.5159,
    "binary": true,
-   "yes_goals": 3.122,
-   "no_goals": 2.894,
-   "yes_over": 0.6076,
-   "no_over": 0.5477,
-   "yes_n": 11671
+   "yes_goals": 3.123,
+   "no_goals": 2.898,
+   "yes_over": 0.6082,
+   "no_over": 0.5491,
+   "yes_n": 11754
   },
   {
    "label": "Opp on back-to-back",
    "group": "spot",
-   "rho": 0.0383,
-   "auc": 0.5101,
+   "rho": 0.0366,
+   "auc": 0.5094,
    "binary": true,
-   "yes_goals": 3.249,
-   "no_goals": 3.057,
-   "yes_over": 0.6302,
-   "no_over": 0.5927,
-   "yes_n": 2109
+   "yes_goals": 3.245,
+   "no_goals": 3.061,
+   "yes_over": 0.6288,
+   "no_over": 0.5938,
+   "yes_n": 2120
   }
  ],
  "composites": [
   {
    "label": "Board score (current weights)",
-   "auc": 0.6013,
+   "auc": 0.6012,
    "rho": 0.1982,
    "quintiles": [
     {
      "q": 1,
-     "goals": 2.628,
-     "over": 0.4819,
-     "n": 2756
+     "goals": 2.633,
+     "over": 0.4829,
+     "n": 2775
     },
     {
      "q": 2,
-     "goals": 2.848,
-     "over": 0.5435,
-     "n": 2756
+     "goals": 2.846,
+     "over": 0.5441,
+     "n": 2775
     },
     {
      "q": 3,
-     "goals": 3.069,
-     "over": 0.5965,
-     "n": 2756
+     "goals": 3.07,
+     "over": 0.597,
+     "n": 2774
     },
     {
      "q": 4,
-     "goals": 3.285,
-     "over": 0.6564,
-     "n": 2756
+     "goals": 3.289,
+     "over": 0.6577,
+     "n": 2775
     },
     {
      "q": 5,
-     "goals": 3.603,
-     "over": 0.7137,
-     "n": 2756
+     "goals": 3.606,
+     "over": 0.7142,
+     "n": 2775
     }
    ]
   },
   {
    "label": "Projected goals",
-   "auc": 0.6016,
-   "rho": 0.2041,
+   "auc": 0.6014,
+   "rho": 0.2039,
    "quintiles": [
     {
      "q": 1,
-     "goals": 2.626,
-     "over": 0.4848,
-     "n": 2756
+     "goals": 2.627,
+     "over": 0.485,
+     "n": 2775
     },
     {
      "q": 2,
-     "goals": 2.869,
-     "over": 0.5468,
-     "n": 2756
+     "goals": 2.871,
+     "over": 0.5474,
+     "n": 2775
     },
     {
      "q": 3,
-     "goals": 2.984,
-     "over": 0.5864,
-     "n": 2756
+     "goals": 2.99,
+     "over": 0.589,
+     "n": 2774
     },
     {
      "q": 4,
-     "goals": 3.319,
-     "over": 0.6542,
-     "n": 2756
+     "goals": 3.321,
+     "over": 0.6548,
+     "n": 2775
     },
     {
      "q": 5,
      "goals": 3.636,
-     "over": 0.7199,
-     "n": 2756
+     "over": 0.7196,
+     "n": 2775
     }
    ]
   },
   {
    "label": "Your original sheet",
-   "auc": 0.5684,
-   "rho": 0.1301,
+   "auc": 0.5677,
+   "rho": 0.1287,
    "quintiles": [
     {
      "q": 1,
-     "goals": 2.791,
-     "over": 0.5221,
-     "n": 2756
+     "goals": 2.798,
+     "over": 0.5236,
+     "n": 2775
     },
     {
      "q": 2,
-     "goals": 2.923,
-     "over": 0.5537,
-     "n": 2756
+     "goals": 2.925,
+     "over": 0.5546,
+     "n": 2775
     },
     {
      "q": 3,
-     "goals": 3.095,
-     "over": 0.6052,
-     "n": 2756
+     "goals": 3.096,
+     "over": 0.6063,
+     "n": 2774
     },
     {
      "q": 4,
-     "goals": 3.189,
-     "over": 0.6317,
-     "n": 2756
+     "goals": 3.19,
+     "over": 0.6321,
+     "n": 2775
     },
     {
      "q": 5,
      "goals": 3.437,
-     "over": 0.6792,
-     "n": 2756
+     "over": 0.6793,
+     "n": 2775
     }
    ]
   }
@@ -343,165 +343,165 @@
  "deciles": [
   {
    "d": 1,
-   "goals": 2.511,
-   "over": 0.4536,
+   "goals": 2.515,
+   "over": 0.4546,
    "lo": 0.5,
    "hi": 26.0
   },
   {
    "d": 2,
-   "goals": 2.745,
-   "over": 0.5102,
+   "goals": 2.751,
+   "over": 0.5112,
    "lo": 26.0,
    "hi": 33.3
   },
   {
    "d": 3,
-   "goals": 2.788,
-   "over": 0.5247,
+   "goals": 2.79,
+   "over": 0.527,
    "lo": 33.3,
    "hi": 38.5
   },
   {
    "d": 4,
-   "goals": 2.909,
-   "over": 0.5624,
+   "goals": 2.903,
+   "over": 0.5612,
    "lo": 38.5,
    "hi": 43.4
   },
   {
    "d": 5,
-   "goals": 3.0,
-   "over": 0.5849,
+   "goals": 2.998,
+   "over": 0.5847,
    "lo": 43.4,
    "hi": 48.2
   },
   {
    "d": 6,
-   "goals": 3.139,
-   "over": 0.6081,
+   "goals": 3.143,
+   "over": 0.6092,
    "lo": 48.2,
    "hi": 52.8
   },
   {
    "d": 7,
-   "goals": 3.231,
-   "over": 0.6357,
+   "goals": 3.237,
+   "over": 0.639,
    "lo": 52.8,
    "hi": 58.0
   },
   {
    "d": 8,
-   "goals": 3.34,
-   "over": 0.6771,
+   "goals": 3.341,
+   "over": 0.6763,
    "lo": 58.0,
    "hi": 63.9
   },
   {
    "d": 9,
-   "goals": 3.497,
-   "over": 0.688,
+   "goals": 3.506,
+   "over": 0.6885,
    "lo": 63.9,
-   "hi": 72.4
+   "hi": 72.3
   },
   {
    "d": 10,
-   "goals": 3.71,
-   "over": 0.7395,
-   "lo": 72.4,
+   "goals": 3.706,
+   "over": 0.7399,
+   "lo": 72.3,
    "hi": 100.0
   }
  ],
  "bands": [
   {
    "band": "<30",
-   "goals": 2.61,
-   "over": 0.4758,
-   "n": 2047
+   "goals": 2.615,
+   "over": 0.4767,
+   "n": 2058
   },
   {
    "band": "30-40",
-   "goals": 2.778,
-   "over": 0.5242,
-   "n": 2499
+   "goals": 2.776,
+   "over": 0.525,
+   "n": 2520
   },
   {
    "band": "40-50",
-   "goals": 2.981,
-   "over": 0.5792,
-   "n": 2892
+   "goals": 2.982,
+   "over": 0.5796,
+   "n": 2907
   },
   {
    "band": "50-60",
-   "goals": 3.235,
-   "over": 0.6354,
-   "n": 2715
+   "goals": 3.239,
+   "over": 0.6374,
+   "n": 2741
   },
   {
    "band": "60-70",
-   "goals": 3.416,
-   "over": 0.6849,
-   "n": 1923
+   "goals": 3.422,
+   "over": 0.6853,
+   "n": 1935
   },
   {
    "band": "70+",
-   "goals": 3.685,
-   "over": 0.7306,
-   "n": 1704
+   "goals": 3.684,
+   "over": 0.7303,
+   "n": 1713
   }
  ],
  "calibration": [
   {
    "pred": 0.4113,
-   "actual": 0.4439,
-   "n": 1194,
+   "actual": 0.445,
+   "n": 1200,
    "proj": 2.329,
-   "goals": 2.504
+   "goals": 2.505
   },
   {
    "pred": 0.4772,
-   "actual": 0.5174,
-   "n": 1641,
+   "actual": 0.5176,
+   "n": 1646,
    "proj": 2.583,
-   "goals": 2.723
+   "goals": 2.728
   },
   {
    "pred": 0.5262,
-   "actual": 0.5437,
-   "n": 2336,
+   "actual": 0.5438,
+   "n": 2354,
    "proj": 2.782,
-   "goals": 2.869
+   "goals": 2.868
   },
   {
-   "pred": 0.5754,
-   "actual": 0.5837,
-   "n": 2652,
+   "pred": 0.5753,
+   "actual": 0.5858,
+   "n": 2675,
    "proj": 2.994,
-   "goals": 2.975
+   "goals": 2.979
   },
   {
    "pred": 0.6239,
-   "actual": 0.6386,
-   "n": 2363,
+   "actual": 0.6394,
+   "n": 2385,
    "proj": 3.219,
-   "goals": 3.242
+   "goals": 3.243
   },
   {
    "pred": 0.6733,
-   "actual": 0.6763,
-   "n": 1758,
+   "actual": 0.6776,
+   "n": 1765,
    "proj": 3.47,
-   "goals": 3.428
+   "goals": 3.435
   },
   {
-   "pred": 0.7485,
-   "actual": 0.7358,
-   "n": 1836,
-   "proj": 3.929,
-   "goals": 3.702
+   "pred": 0.7484,
+   "actual": 0.735,
+   "n": 1849,
+   "proj": 3.928,
+   "goals": 3.7
   }
  ],
- "proj_mean": 3.075,
+ "proj_mean": 3.076,
  "coef": {
   "goalie": 0.422,
   "defense": 0.927,
@@ -715,11 +715,11 @@
   },
   {
    "season": "2026-27 (to date)",
-   "n": 660,
-   "board": 0.6405,
-   "sheet": 0.5854,
-   "proj": 0.6375,
-   "over": 0.5894
+   "n": 754,
+   "board": 0.6341,
+   "sheet": 0.5687,
+   "proj": 0.6298,
+   "over": 0.6048
   }
  ],
  "rules": {

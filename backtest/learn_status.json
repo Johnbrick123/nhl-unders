@@ -1,7 +1,7 @@
 {
- "date": "2026-11-16",
- "data_through": "2026-11-15",
- "current_n": 660,
+ "date": "2026-11-23",
+ "data_through": "2026-11-22",
+ "current_n": 754,
  "model_version": 1,
  "current": {
   "goalie": 0.2,
@@ -28,20 +28,27 @@
   "fin": 0.1
  },
  "metrics": {
-  "val_n": 592,
-  "val_cur": 0.6371,
-  "val_new": 0.6305,
-  "val_target": 0.6305,
+  "val_n": 588,
+  "val_cur": 0.6321,
+  "val_new": 0.6236,
+  "val_target": 0.6236,
   "prev_cur": 0.5747,
   "prev_new": 0.5772
  },
  "measured": {
   "home": 1.034,
   "away": 0.966,
-  "b2b": 0.916,
-  "oppB2b": 1.04
+  "b2b": 0.918,
+  "oppB2b": 1.034
  },
  "decision": "kept",
- "reason": "New weights didn't beat the current ones on the last 42 days (0.631 vs 0.637).",
- "alerts": []
+ "reason": "New weights didn't beat the current ones on the last 42 days (0.624 vs 0.632).",
+ "alerts": [
+  {
+   "key": "projection-effects",
+   "level": "watch",
+   "title": "Home ice or rest effects have drifted",
+   "body": "Measured over the last three seasons: oppB2b \u00d71.034 (board uses \u00d71.06). Update model.json \u2192 projection if this holds for a few weeks."
+  }
+ ]
 }
