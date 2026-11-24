@@ -255,7 +255,7 @@ function render(){
   for(const r of view){
     const opts=(byTeam[r.opp]||[]).map(x=>`<option value="${x.id}"${r.goalie&&x.id===r.goalie.id?' selected':''}>${x.name}${x.xga?` (${x.gsax>0?'+':''}${x.gsax.toFixed(1)})`:''}</option>`).join('');
     const un=isUnconf(r);
-    body+=`<tr${un?' class="unconf"':''}><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td>
+    body+=`<tr${un?' class="unconf"':''}><td class="l sub">${r.game}<br><span style="opacity:.7">${gTime(r.g)}</span></td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td>
       <td class="l"><span class="ha ${r.ha}">${r.ha}</span></td>
       <td class="l"><select class="g" data-k="${r.key}" aria-label="${r.opp} goalie">${opts}</select><span class="dot ${r.status.replace(/\s/g,'')}" title="${r.status}"></span>${un?`<span class="ucf" title="Daily Faceoff ${r.status==='Default'?'has no report yet, so this is the most-used goalie':'only projects this starter'}. The score may change.">Unconfirmed</span>`:''}</td>`;
     if(showInputs)inputCols.forEach((c,i)=>{const v=c.v(r);body+=`<td class="${v==null?'na':''} ${i?'':'groupsep'}">${fmt(v,c.d)}</td>`});
@@ -298,7 +298,12 @@ function renderMatchups(rows){
 // L10 = goals per game over the team's last 10 completed games, ranked 1 (most) to 32 across the league.
 // A team passes the recent-scoring rule when its rank is at or below the cutoff (22 = bottom third).
 const l10Chip=t=>t.l10==null?'<span class="sub">n/a</span>':`<span class="mini" style="background:${heat(Math.max(0,Math.min(100,(t.l10-1.5)/3*100)))}">${t.l10.toFixed(1)}</span> <span class="sub">#${t.l10Rank}</span>`;
-const gName=r=>r.goalie?`${r.goalie.last}<span class="dot ${r.status.replace(/\s/g,'')}" title="${r.status}"></span>`:'?';
+// Goalie quality: GSAx (goals saved above expected, MoneyPuck) over last season + this one. Rank 1 = hardest to score on,
+// among goalies with 15+ games, by the model's shrunk rate (the same number that feeds the Opp G sub-score).
+const GQ=G.filter(g=>g.gp>=15).sort((a,b)=>a.mult-b.mult); const gRank={}; GQ.forEach((g,i)=>gRank[g.id]=i+1);
+const gName=r=>{if(!r.goalie)return '?';const g=r.goalie,rk=gRank[g.id],u=highGood(g.mult,SC.goalie),bg=heat(u);
+  return `${g.last}<span class="dot ${r.status.replace(/\s/g,'')}" title="${r.status}"></span> <span class="mini" style="background:${bg}" title="Goals saved above expected, ${g.gpPrior}+${g.gpCur} GP. Rank ${rk||'n/a'} of ${GQ.length} goalies with 15+ GP (1 = hardest to score on)">${g.xga?(g.gsax>0?'+':'')+g.gsax.toFixed(1):'new'}</span>${rk?` <span class="sub">#${rk}</span>`:' <span class="sub">n/a</span>'}`};
+const gTime=g=>g.start?new Date(g.start).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):'';
 const resCell=(r,line)=>r.final&&r.actual!=null?`<td class="res ${r.actual<line?'hit':'miss'}">${r.actual} ${r.actual<line?'✓':'✗'}</td>`:'<td class="na">—</td>';
 function renderFocus(rows){
   const tCut=+$('#fTeam').value||0, gCut=+$('#fGame').value||0, rCut=+$('#fRank').value||1;
@@ -307,11 +312,11 @@ function renderFocus(rows){
   // team unders
   const low=rows.filter(r=>r.total!=null&&r.total<tCut).sort((a,b)=>a.total-b.total);
   const tOk=low.filter(r=>passes(r.t)), tCutRows=low.filter(r=>!passes(r.t));
-  let t=`<thead><tr><th class="l">Game</th><th class="l">Team</th><th class="l"></th><th>Score</th><th class="l">Opp goalie</th><th class="groupsep">L10 GF/G</th><th class="groupsep">Proj G</th><th>U2.5</th><th>U3.5</th>${hasFinal?'<th>Result</th>':''}<th class="l">Spot</th></tr></thead><tbody>`;
-  for(const r of tOk)t+=`<tr${isUnconf(r)?' class="unconf"':''}><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td><td class="l"><span class="ha ${r.ha}">${r.ha}</span></td>
+  let t=`<thead><tr><th class="l">Time</th><th class="l">Game</th><th class="l">Team</th><th class="l"></th><th>Score</th><th class="l">Opp goalie <span class="sub">GSAx · rank</span></th><th class="groupsep">L10 GF/G</th><th class="groupsep">Proj G</th><th>U2.5</th><th>U3.5</th>${hasFinal?'<th>Result</th>':''}<th class="l">Spot</th></tr></thead><tbody>`;
+  for(const r of tOk)t+=`<tr${isUnconf(r)?' class="unconf"':''}><td class="l sub">${gTime(r.g)}</td><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> <span class="sub">${r.t.name}</span></td><td class="l"><span class="ha ${r.ha}">${r.ha}</span></td>
     <td><span class="score" style="background:${heat(r.total)}">${r.total.toFixed(1)}</span></td><td class="l">${gName(r)}${isUnconf(r)?' <span class="ucf">Unconfirmed</span>':''}</td><td class="groupsep">${l10Chip(r.t)}</td>
     <td class="groupsep">${r.lam.toFixed(2)}</td><td class="pct"><b>${(r.u25*100).toFixed(0)}%</b> <span class="sub">${american(r.u25)}</span></td><td class="pct"><b>${(r.u35*100).toFixed(0)}%</b> <span class="sub">${american(r.u35)}</span></td>${hasFinal?resCell(r,3.5):''}<td class="l">${spotTags(r)}</td></tr>`;
-  if(!tOk.length)t+=`<tr><td class="l sub" colspan="11">No team below ${tCut} passes the recent-scoring rule today.</td></tr>`;
+  if(!tOk.length)t+=`<tr><td class="l sub" colspan="12">No team below ${tCut} passes the recent-scoring rule today.</td></tr>`;
   $('#tblFocusTeam').innerHTML=t+'</tbody>';
   // game unders
   const by={}; for(const r of rows)(by[r.g.id]=by[r.g.id]||{g:r.g})[r.ha]=r;
@@ -320,17 +325,17 @@ function renderFocus(rows){
   const lowG=games.filter(d=>d.comb<gCut).sort((a,b)=>a.comb-b.comb);
   const gOk=lowG.filter(d=>passes(d.A.t)&&passes(d.H.t)), gCutRows=lowG.filter(d=>!(passes(d.A.t)&&passes(d.H.t)));
   const side=r=>`${r.ab} <span class="mini" style="background:${heat(r.total)}">${r.total.toFixed(1)}</span>`;
-  let g=`<thead><tr><th class="l">Game</th><th>Away</th><th>Home</th><th class="groupsep">Combined</th><th class="groupsep">Away L10</th><th>Home L10</th><th class="groupsep">Proj total</th><th>U5.5</th><th>U6.5</th>${hasFinal?'<th>Result</th>':''}<th class="l">Goalies</th></tr></thead><tbody>`;
-  for(const d of gOk)g+=`<tr><td class="l">${d.g.away} @ ${d.g.home}</td><td>${side(d.A)}</td><td>${side(d.H)}</td><td class="groupsep"><span class="mini" style="background:${heat(d.comb/2)}">${d.comb.toFixed(1)}</span></td>
+  let g=`<thead><tr><th class="l">Time</th><th class="l">Game</th><th>Away</th><th>Home</th><th class="groupsep">Combined</th><th class="groupsep">Away L10</th><th>Home L10</th><th class="groupsep">Proj total</th><th>U5.5</th><th>U6.5</th>${hasFinal?'<th>Result</th>':''}<th class="l">Goalies <span class="sub">GSAx · rank</span></th></tr></thead><tbody>`;
+  for(const d of gOk)g+=`<tr><td class="l sub">${gTime(d.g)}</td><td class="l">${d.g.away} @ ${d.g.home}</td><td>${side(d.A)}</td><td>${side(d.H)}</td><td class="groupsep"><span class="mini" style="background:${heat(d.comb/2)}">${d.comb.toFixed(1)}</span></td>
     <td class="groupsep">${l10Chip(d.A.t)}</td><td>${l10Chip(d.H.t)}</td><td class="groupsep"><b>${d.lam.toFixed(2)}</b></td><td class="pct"><b>${(d.u55*100).toFixed(0)}%</b> <span class="sub">${american(d.u55)}</span></td><td class="pct"><b>${(d.u65*100).toFixed(0)}%</b> <span class="sub">${american(d.u65)}</span></td>
     ${hasFinal?(d.fin&&d.tot!=null?`<td class="res ${d.tot<5.5?'hit':'miss'}">${d.tot} ${d.tot<5.5?'✓':'✗'}</td>`:'<td class="na">—</td>'):''}<td class="l sub">${d.g.away} ${gName(d.H)} · ${d.g.home} ${gName(d.A)}</td></tr>`;
-  if(!gOk.length)g+=`<tr><td class="l sub" colspan="11">No game below a combined ${gCut} has both teams passing the recent-scoring rule today.</td></tr>`;
+  if(!gOk.length)g+=`<tr><td class="l sub" colspan="12">No game below a combined ${gCut} has both teams passing the recent-scoring rule today.</td></tr>`;
   $('#tblFocusGame').innerHTML=g+'</tbody>';
   // what the rule removed, and why
-  let c=`<thead><tr><th class="l">Type</th><th class="l">Game</th><th class="l">Would-be play</th><th>Score</th><th class="l groupsep">Why it was cut</th>${hasFinal?'<th>Result</th>':''}</tr></thead><tbody>`;
-  for(const r of tCutRows)c+=`<tr><td class="l sub">Team</td><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> under</td><td><span class="score" style="background:${heat(r.total)}">${r.total.toFixed(1)}</span></td><td class="l groupsep">${why(r.t)}</td>${hasFinal?resCell(r,3.5):''}</tr>`;
-  for(const d of gCutRows)c+=`<tr><td class="l sub">Game</td><td class="l sub">${d.g.away} @ ${d.g.home}</td><td class="l">game under</td><td><span class="mini" style="background:${heat(d.comb/2)}">${d.comb.toFixed(1)}</span></td><td class="l groupsep">${[d.A.t,d.H.t].filter(x=>!passes(x)).map(why).join(' · ')}</td>${hasFinal?(d.fin&&d.tot!=null?`<td class="res ${d.tot<5.5?'hit':'miss'}">${d.tot}</td>`:'<td class="na">—</td>'):''}</tr>`;
-  if(!tCutRows.length&&!gCutRows.length)c+=`<tr><td class="l sub" colspan="6">Nothing cut today.</td></tr>`;
+  let c=`<thead><tr><th class="l">Time</th><th class="l">Type</th><th class="l">Game</th><th class="l">Would-be play</th><th>Score</th><th class="l groupsep">Why it was cut</th>${hasFinal?'<th>Result</th>':''}</tr></thead><tbody>`;
+  for(const r of tCutRows)c+=`<tr><td class="l sub">${gTime(r.g)}</td><td class="l sub">Team</td><td class="l sub">${r.game}</td><td class="l"><span class="team">${r.ab}</span> under</td><td><span class="score" style="background:${heat(r.total)}">${r.total.toFixed(1)}</span></td><td class="l groupsep">${why(r.t)}</td>${hasFinal?resCell(r,3.5):''}</tr>`;
+  for(const d of gCutRows)c+=`<tr><td class="l sub">${gTime(d.g)}</td><td class="l sub">Game</td><td class="l sub">${d.g.away} @ ${d.g.home}</td><td class="l">game under</td><td><span class="mini" style="background:${heat(d.comb/2)}">${d.comb.toFixed(1)}</span></td><td class="l groupsep">${[d.A.t,d.H.t].filter(x=>!passes(x)).map(why).join(' · ')}</td>${hasFinal?(d.fin&&d.tot!=null?`<td class="res ${d.tot<5.5?'hit':'miss'}">${d.tot}</td>`:'<td class="na">—</td>'):''}</tr>`;
+  if(!tCutRows.length&&!gCutRows.length)c+=`<tr><td class="l sub" colspan="7">Nothing cut today.</td></tr>`;
   $('#tblFocusCut').innerHTML=c+'</tbody>';
 }
 $('#fTeam').oninput=render; $('#fGame').oninput=render; $('#fRank').onchange=render;
@@ -393,7 +398,7 @@ $('#method').innerHTML=`
 <p>The Score ranks spots; the projection prices them. They usually agree. When they don't, it's because weights you changed aren't in the projection.</p>
 <p>Columns for zero-weight sub-scores are hidden. Raise a slider under Adjust weights and its column appears.</p>
 <h3>Focus tab</h3>
-<p>The Score already includes each team's season-long offense, but it can't see a hot streak. The Focus tab narrows the day's under plays with one extra rule: the team's goals per game over its last 10 must rank in the bottom third of the league (22nd or worse of 32). A team under needs a score below 30 and that rule; a game under needs a combined score below 75 and both teams passing it. Low-score rows that fail the rule are listed separately so you can see what was cut and why. Through Nov 23 this season, games under a combined 75 where at least one team was top-third in L10 scoring averaged 7.8 goals; games where both teams were bottom-third averaged 5.6.</p>
+<p>The Score already includes each team's season-long offense, but it can't see a hot streak. The Focus tab narrows the day's under plays with one extra rule: the team's goals per game over its last 10 must rank in the bottom third of the league (22nd or worse of 32). A team under needs a score below 30 and that rule; a game under needs a combined score below 75 and both teams passing it. Low-score rows that fail the rule are listed separately so you can see what was cut and why. Next to each goalie is his GSAx (goals saved above expected, last season plus this one) and his rank among goalies with 15+ games, 1 = hardest to score on; the Goalies tab has the full list. Times are shown in your local time zone. Through Nov 23 this season, games under a combined 75 where at least one team was top-third in L10 scoring averaged 7.8 goals; games where both teams were bottom-third averaged 5.6.</p>
 <h3>Spot tags</h3>
 <ul><li><b>B2B</b> — this team played yesterday (tired legs, fewer goals).</li><li><b>Opp B2B</b> — the opponent played yesterday; often means a backup goalie.</li><li><b>New G</b> — goalie with no NHL sample, scored as average.</li></ul>
 <h3>Data</h3>
