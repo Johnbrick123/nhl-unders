@@ -8,7 +8,12 @@ function makeEngine(DATA){
   for(const a of AB){const t=T[a];
     t.off=0.65*t.xgf/LG.xg+0.35*t.gf/LG.gf; t.def=t.xga/LG.xg;
     t.shPct=t.sf?t.gf/t.sf:0; t.fin=t.xgf?t.gf/t.xgf:1;
-    const r=REC[a]||[]; t.l5=r.length>=3?r.reduce((s,x)=>s+(x[0]||0),0)/r.length:null; t.l5n=r.length;}
+    const r=REC[a]||[], r5=r.slice(-5), avg=l=>l.reduce((s,x)=>s+(x[0]||0),0)/l.length;
+    t.l5=r5.length>=3?avg(r5):null; t.l5n=r5.length;            // last 5 (board column + L5 input)
+    t.l10=r.length>=5?avg(r):null; t.l10n=r.length;}            // last 10 (Focus tab filter)
+  // league rank by last-10 goals per game: 1 = scoring the most. Needs 5+ games; others stay unranked.
+  const ranked=AB.filter(a=>T[a].l10!=null).sort((a,b)=>T[b].l10-T[a].l10);
+  for(const a of AB)T[a].l10Rank=null; ranked.forEach((a,i)=>T[a].l10Rank=i+1); const l10Ranked=ranked.length;
   for(const g of G){const rate=g.xga?g.gsax/g.xga:0,w=g.xga/(g.xga+60);
     g.mult=g.xga?Math.min(1.15,Math.max(0.85,1-w*rate)):1; g.gp=g.gpPrior+g.gpCur;}
   const byTeam={}; for(const g of G)(byTeam[g.team]=byTeam[g.team]||[]).push(g);
@@ -75,6 +80,6 @@ function makeEngine(DATA){
     }
     return out;
   }
-  return {M,T,AB,G,REC,LG,SC,byTeam,lowGood,highGood,projectedStarter,pois,american,prevDay,buildRows,gameTotal};
+  return {M,T,AB,G,REC,LG,SC,byTeam,l10Ranked,lowGood,highGood,projectedStarter,pois,american,prevDay,buildRows,gameTotal};
 }
 if(typeof module!=='undefined')module.exports={makeEngine};

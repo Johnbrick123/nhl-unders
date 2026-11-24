@@ -174,8 +174,9 @@ def schedule(today):
     return days
 
 
-def recent(abbrevs, n=5):
-    """Last n completed regular-season games per team: [gf, ga, opp, date]."""
+def recent(abbrevs, n=10):
+    """Last n completed regular-season games per team: [gf, ga, opp, date]. The board uses the
+    last 5 for the L5 column and all 10 for the Focus tab's recent-scoring rank."""
     out = {}
     for ab in abbrevs:
         try:
@@ -253,7 +254,8 @@ def main():
 
 LOG_FIELDS = ["date", "gameId", "start", "team", "opp", "ha", "goalie_id", "goalie", "goalie_status",
               "s_goalie", "s_def", "s_off", "s_st", "s_l5", "s_fin", "score", "proj", "p_over",
-              "b2b", "opp_b2b", "model_version", "logged_at", "actual", "last_period", "graded_at", "opp_starter_id"]
+              "b2b", "opp_b2b", "model_version", "logged_at", "actual", "last_period", "graded_at", "opp_starter_id",
+              "l10", "l10_rank"]   # goals/game over the last 10 and its league rank (Focus tab rule), logged since 2026-11-24
 
 
 def log_path(data):

@@ -12,5 +12,6 @@ const rows = E.buildRows(DATA.today).map(r => ({
   s_goalie: r1(r.s.goalie), s_def: r1(r.s.def), s_off: r1(r.s.off), s_st: r1(r.s.st), s_l5: r1(r.s.l5), s_fin: r1(r.s.fin),
   score: r1(r.total), proj: Math.round(r.lam * 1000) / 1000, p_over: Math.round((1 - r.u25) * 1000) / 1000,
   b2b: r.b2b ? 1 : 0, opp_b2b: r.oppB2b ? 1 : 0, model_version: DATA.model.version,
+  l10: r1(r.t.l10), l10_rank: r.t.l10Rank == null ? '' : r.t.l10Rank,
 }));
 process.stdout.write(JSON.stringify(rows));

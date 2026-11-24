@@ -7,7 +7,7 @@ multi-season backtest every week, and adjusts its weights when the data says so.
 
 | Page | What it shows |
 |---|---|
-| `index.html` — the board | Today's slate, sortable, with goalie picker and weight sliders |
+| `index.html` — the board | Today's slate, sortable, with goalie picker and weight sliders. The **Focus** tab narrows the day's under plays: team score under 30 (or game combined under 75) **and** the team's goals per game over its last 10 ranks in the bottom third of the league. Low-score rows the rule cuts are listed with the reason. |
 | `monitor.html` — accuracy monitor | How this season's pregame scores are doing vs the backtest, data health, model history |
 | `backtest.html` — backtest | Five-plus seasons replayed game by game: which inputs predict goals, and how well the score ranks games |
 
@@ -16,7 +16,9 @@ multi-season backtest every week, and adjusts its weights when the data says so.
 **Hourly, 9am–11pm ET** (`.github/workflows/daily.yml`)
 1. `build.py` pulls the latest data and rebuilds the board.
 2. It saves each of today's games to `monitor/log_<season>.csv`. A row keeps updating
-   until puck drop (so it picks up confirmed goalies), then never changes.
+   until puck drop (so it picks up confirmed goalies), then never changes. Since 2026-11-24
+   each row also logs `l10` (goals/game over the last 10) and `l10_rank`, so the Focus rule
+   can be graded against results.
 3. `monitor/grade.py` fills in final goals for finished games (includes OT, empty-net
    and the shootout winner, like most books).
 4. `monitor/accuracy.py` measures the season so far and runs health checks.
