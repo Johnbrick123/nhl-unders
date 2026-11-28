@@ -3,7 +3,7 @@
  "logged": 840,
  "graded": 814,
  "today": "2026-11-28",
- "built": "2026-11-28 02:38",
+ "built": "2026-11-28 15:53",
  "model_version": 1,
  "weights": {
   "goalie": 0.2,
@@ -208,7 +208,7 @@
    "date": "2026-11-28",
    "rows": 26,
    "graded": 0,
-   "proj": 3.0323076923076924,
+   "proj": 3.1009230769230767,
    "goals": null,
    "red_n": 0,
    "red_under": 0,
